@@ -85,7 +85,7 @@ class SVMI:
 
         # Compute vectors
         # A_s is a 2D array whose columns contain the individual A_s_i values
-        A_v = np.dot(VK_perturbed_inv, np.dot(V, y))
+        A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
         A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
         A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants])
 
@@ -113,8 +113,6 @@ class SVMI:
 
         if verbose:
             print('Invariants weights: ', mu)
-            print(f'c: {c}')
-            print(f'A: {A}')
 
         return A, c
 
