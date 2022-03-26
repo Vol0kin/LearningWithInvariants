@@ -196,9 +196,9 @@ class SVMIRandomProjections(SVMI):
         self.delta = delta
     
 
-    def _generate_random_projections_invariants(self, num_invariants=10):
-        args = {'X': self.X, 'y': self.y}
-        random_projections = np.array([random_projection(**args) for _ in range(num_invariants)])
+    def _generate_random_projections_invariants(self, num_invariants=10) -> npt.NDArray[np.float64]:
+        random_projections = np.array([random_projection(X=self.X, y=self.y) for _ in range(num_invariants)])
+        # random_projections = random_projections / np.linalg.norm(random_projections)
 
         return random_projections
     
@@ -208,6 +208,7 @@ class SVMIRandomProjections(SVMI):
         X: npt.NDArray[np.float64],
         y: npt.NDArray[np.float64],
         num_invariants=10,
+        tolerance=10,
         use_v_matrix=False,
         verbose=False
     ):
@@ -228,7 +229,7 @@ class SVMIRandomProjections(SVMI):
             self.kernel = linear_kernel
             K = self.kernel(X, X)
         
-        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix, verbose=verbose)
+        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix)
 
         # Compute V matrix and Gramm matrix
         V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
@@ -242,17 +243,15 @@ class SVMIRandomProjections(SVMI):
         A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
         A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
 
-        MAX_TRIES_NO_IMPROVEMENT = 10
         n_tries = 0
-        self.m = 0
         invariants = []
 
         # TODO: Test if T_max must be used in the condition
-        while n_tries < MAX_TRIES_NO_IMPROVEMENT and self.m < num_invariants:
+        while n_tries < tolerance and len(invariants) < num_invariants:
             n_tries += 1
 
             # Generate random projection invariants
-            predicates = self._generate_random_projections_invariants(num_invariants=num_invariants)
+            predicates = self._generate_random_projections_invariants(num_invariants=20)
             T_values = []
 
             # Evaluate the random projections
@@ -266,10 +265,10 @@ class SVMIRandomProjections(SVMI):
             if T_max > self.delta:
                 if verbose:
                     print(f'Selected invariant with T={T_max}')
+                    # print(T_values)
 
                 # Update control variables
                 n_tries = 0
-                self.m += 1
 
                 invariants.append(predicates[np.argmax(T_values)])
                 invariants_arr = np.array(invariants)
@@ -282,7 +281,7 @@ class SVMIRandomProjections(SVMI):
                 rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
 
                 c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
-                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(self.m)]) for k in range(self.m)])
+                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(len(invariants))]) for k in range(len(invariants))])
                 rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants_arr])
 
                 a_1 = np.concatenate(([c_1], mu_1))
@@ -295,9 +294,12 @@ class SVMIRandomProjections(SVMI):
                 self.c, mu = solution[0], solution[1:]
 
                 # The sum can be replaced with a dot product
-                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(self.m)]), axis=0)
+                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariants))]), axis=0)
 
                 if verbose:
                     print('Invariants weights: ', mu)
 
         
+        if verbose:
+            print('Finished training')
+            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
