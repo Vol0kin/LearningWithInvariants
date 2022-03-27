@@ -208,7 +208,7 @@ class SVMIRandomProjections(SVMI):
         X: npt.NDArray[np.float64],
         y: npt.NDArray[np.float64],
         num_invariants=10,
-        tolerance=10,
+        tolerance=100,
         use_v_matrix=False,
         verbose=False
     ):
@@ -264,7 +264,7 @@ class SVMIRandomProjections(SVMI):
 
             if T_max > self.delta:
                 if verbose:
-                    print(f'Selected invariant with T={T_max}')
+                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
                     # print(T_values)
 
                 # Update control variables
