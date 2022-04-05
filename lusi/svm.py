@@ -196,9 +196,15 @@ class SVMIRandomProjections(SVMI):
         self.delta = delta
     
 
-    def _generate_random_projections_invariants(self, num_invariants=10) -> npt.NDArray[np.float64]:
-        random_projections = np.array([random_projection(X=self.X, y=self.y) for _ in range(num_invariants)])
-        # random_projections = random_projections / np.linalg.norm(random_projections)
+    def _generate_random_projections_invariants(
+        self,
+        num_projections=20,
+        normalize_projections=False
+    ) -> npt.NDArray[np.float64]:
+        random_projections = np.array([random_projection(X=self.X, y=self.y) for _ in range(num_projections)])
+
+        if normalize_projections:
+            random_projection = random_projection / np.sqrt(self.d)
 
         return random_projections
     
@@ -208,9 +214,11 @@ class SVMIRandomProjections(SVMI):
         X: npt.NDArray[np.float64],
         y: npt.NDArray[np.float64],
         num_invariants=10,
+        num_projections=20,
         tolerance=100,
         use_v_matrix=False,
-        verbose=False
+        verbose=False,
+        normalize_projections=False
     ):
         self.X = X
         self.y = y
@@ -246,12 +254,11 @@ class SVMIRandomProjections(SVMI):
         n_tries = 0
         invariants = []
 
-        # TODO: Test if T_max must be used in the condition
         while n_tries < tolerance and len(invariants) < num_invariants:
             n_tries += 1
 
             # Generate random projection invariants
-            predicates = self._generate_random_projections_invariants(num_invariants=20)
+            predicates = self._generate_random_projections_invariants(num_projections=num_projections, normalize_projections=normalize_projections)
             T_values = []
 
             # Evaluate the random projections
