@@ -204,7 +204,7 @@ class SVMIRandomProjections(SVMI):
         random_projections = np.array([random_projection(X=self.X, y=self.y) for _ in range(num_projections)])
 
         if normalize_projections:
-            random_projection = random_projection / np.sqrt(self.d)
+            random_projections = random_projections / np.sqrt(self.d)
 
         return random_projections
     
