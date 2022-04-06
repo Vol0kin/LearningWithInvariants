@@ -36,3 +36,33 @@ def box(**kwargs):
     inside_box = np.logical_and(X[:, [1, 5]] >= -box_limit, X[:, [1, 5]] <= box_limit)
 
     return np.where(inside_box[:, 0] == inside_box[:, 1], 1, 0)
+
+
+def random_box(X, y):
+    d = X.shape[1]
+    n = X.shape[0]
+    created_region = False
+    positive_class_idx = np.where(y == 1)[0]
+
+    while not created_region:
+        center_idx = np.random.choice(positive_class_idx)
+        center_point = X[center_idx]
+        points_in_region = np.zeros(n)
+        radius_factor = np.random.uniform(0.15, 0.25)
+
+        for i in range(d):
+            min_dim = np.min(X[:, i])
+            max_dim = np.max(X[:, i])
+            range_dim = max_dim - min_dim
+
+            radius = range_dim * radius_factor
+
+            idx_in_range = np.where((X[:, i] >= (center_point[i] - radius)) & (X[:, i] <= (center_point[i] + radius)))
+            points_in_region[idx_in_range] += 1
+
+        points_in_region = points_in_region / d
+        points_in_region = points_in_region.astype(int)
+
+        created_region = len(np.where(points_in_region > 0)[0]) > 1
+
+    return points_in_region
