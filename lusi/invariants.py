@@ -56,12 +56,15 @@ def random_box(X, y):
             range_dim = max_dim - min_dim
 
             radius = range_dim * radius_factor
+            min_range = center_point[i] - radius
+            max_range = center_point[i] + radius
 
-            idx_in_range = np.where((X[:, i] >= (center_point[i] - radius)) & (X[:, i] <= (center_point[i] + radius)))
+            idx_in_range = np.where((X[:, i] >= min_range) & (X[:, i] <= max_range))
             points_in_region[idx_in_range] += 1
 
         points_in_region = points_in_region / d
         points_in_region = points_in_region.astype(int)
+        points_in_region = np.logical_and(points_in_region, y).astype(float)
 
         created_region = len(np.where(points_in_region > 0)[0]) > 1
 
