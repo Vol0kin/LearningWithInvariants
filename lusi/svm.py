@@ -199,9 +199,13 @@ class SVMIRandomProjections(SVMI):
     def _generate_random_projections_invariants(
         self,
         num_projections=20,
-        normalize_projections=False
+        normalize_projections=False,
+        only_positives=False
     ) -> npt.NDArray[np.float64]:
-        random_projections = np.array([random_projection(X=self.X, y=self.y) for _ in range(num_projections)])
+        random_projections = np.array([
+            random_projection(self.X, self.y, only_positives=only_positives)
+            for _ in range(num_projections)
+        ])
 
         if normalize_projections:
             random_projections = random_projections / np.sqrt(self.d)
@@ -218,7 +222,8 @@ class SVMIRandomProjections(SVMI):
         tolerance=100,
         use_v_matrix=False,
         verbose=False,
-        normalize_projections=False
+        normalize_projections=False,
+        only_positives=False
     ):
         self.X = X
         self.y = y
@@ -258,7 +263,12 @@ class SVMIRandomProjections(SVMI):
             n_tries += 1
 
             # Generate random projection invariants
-            predicates = self._generate_random_projections_invariants(num_projections=num_projections, normalize_projections=normalize_projections)
+            predicates = self._generate_random_projections_invariants(
+                num_projections=num_projections,
+                normalize_projections=normalize_projections,
+                only_positives=only_positives
+            )
+
             T_values = []
 
             # Evaluate the random projections
@@ -321,8 +331,12 @@ class SVMIRandomBoxes(SVMI):
     def _generate_random_boxes(
         self,
         num_boxes=20,
+        only_positives=False,
     ) -> npt.NDArray[np.float64]:
-        random_boxes = np.array([random_box(self.X, self.y) for _ in range(num_boxes)])
+        random_boxes = np.array([
+            random_box(self.X, self.y, only_positives=only_positives)
+            for _ in range(num_boxes)
+        ])
 
         return random_boxes
 
@@ -335,6 +349,7 @@ class SVMIRandomBoxes(SVMI):
         num_boxes=20,
         tolerance=100,
         use_v_matrix=False,
+        only_positives=False,
         verbose=False,
     ):
         self.X = X
@@ -369,13 +384,17 @@ class SVMIRandomBoxes(SVMI):
         A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
 
         n_tries = 0
-        invariants = [positive_class(y=self.y)]
+        invariants = [] if only_positives else [positive_class(y=self.y)]
 
         while n_tries < tolerance and len(invariants) < num_invariants:
             n_tries += 1
 
             # Generate random projection invariants
-            predicates = self._generate_random_boxes(num_boxes=num_boxes)
+            predicates = self._generate_random_boxes(
+                num_boxes=num_boxes,
+                only_positives=only_positives
+            )
+
             T_values = []
 
             # Evaluate the random projections
