@@ -102,3 +102,24 @@ def random_box(X, y, only_positives=False):
         created_region = len(np.where(points_in_region > 0)[0]) > 1
 
     return points_in_region
+
+
+def random_hyperplane(X):
+    n, d = X.shape
+
+    num_points_region = 0
+
+    while num_points_region == 0:
+        dimension = np.random.choice(d)
+
+        min_dim = np.min(X[:, dimension])
+        max_dim = np.max(X[:, dimension])
+        range_dim = max_dim - min_dim
+
+        plane_center = min_dim + np.random.uniform(0, 1) * range_dim
+
+        points_in_region = np.zeros(n)
+        points_in_region[X[:, dimension] > plane_center] = 1.0
+        num_points_region = np.sum(points_in_region)
+
+    return points_in_region
