@@ -1,5 +1,5 @@
 import numpy as np
-from lusi.invariants import positive_class, random_projection, random_box
+from lusi.invariants import *
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -151,13 +151,20 @@ class SVMI:
         self.A, self.c = A, c
 
 
+    def predict_proba(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        probabilites = np.dot(self.A, rbf_kernel(self.X, X, gamma=self.gamma)) + self.c
+        probabilites = np.clip(probabilites, 0, 1)
+
+        return probabilites
+
+
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         # Apply decision rule
-        prediction = np.dot(self.A, rbf_kernel(self.X, X, gamma=self.gamma)) + self.c
+        probabilites = self.predict_proba(X)
 
         # Get label: if the result of the decision rule is smaller than 0.5, then
         # it's classified as 0. Otherwise, it's classified as 1
-        prediction = np.where(prediction < 0.5, 0, 1).flatten()
+        prediction = np.where(probabilites < 0.5, 0, 1)
 
         return prediction
     
@@ -401,6 +408,130 @@ class SVMIRandomBoxes(SVMI):
             for pred in predicates:
                 num = np.dot(pred, np.dot(K, self.A)) + self.c * np.dot(pred, ones) - np.dot(pred, self.y)
                 den = np.dot(self.y, pred)
+                # print(num, den, np.abs(num) / den)
+                T_values.append(np.abs(num) / den)
+
+            T_max = np.max(T_values)
+
+            if T_max > self.delta:
+                if verbose:
+                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
+                    # print(T_values)
+
+                # Update control variables
+                n_tries = 0
+
+                invariants.append(predicates[np.argmax(T_values)])
+                invariants_arr = np.array(invariants)
+
+                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
+
+                # Create system of equations
+                c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
+                mu_1 = np.array([np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi) for phi in invariants_arr])
+                rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
+
+                c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
+                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(len(invariants))]) for k in range(len(invariants))])
+                rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants_arr])
+
+                a_1 = np.concatenate(([c_1], mu_1))
+                a_2 = np.vstack(([c_2], mu_2.T)).T
+                a = np.concatenate(([a_1], a_2), axis=0)
+                b = np.concatenate(([rh_1], rh_2))
+
+                solution = np.linalg.solve(a, b)
+
+                self.c, mu = solution[0], solution[1:]
+
+                # The sum can be replaced with a dot product
+                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariants))]), axis=0)
+
+                if verbose:
+                    print('Invariants weights: ', mu)
+
+
+        if verbose:
+            print('Finished training')
+            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
+
+
+class SVMIRandomHyperplane(SVMI):
+    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
+        super().__init__(C=C, kernel=kernel, gamma=gamma, random_state=random_state)
+        self.delta = delta
+
+
+    def _generate_random_hyperplanes(
+        self,
+        num_hyperplanes=20,
+    ) -> npt.NDArray[np.float64]:
+        random_boxes = np.array([
+            random_hyperplane(self.X)
+            for _ in range(num_hyperplanes)
+        ])
+
+        return random_boxes
+
+
+    def fit(
+        self,
+        X: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64],
+        num_invariants=10,
+        num_hyperplanes=20,
+        tolerance=100,
+        use_v_matrix=False,
+        verbose=False,
+    ):
+        self.X = X
+        self.y = y
+        self.l = len(y)
+        self.d = X.shape[1]
+
+        np.random.seed(self.random_state)
+
+        if self.gamma == 'auto':
+            self.gamma = 1 / self.d
+
+        if self.kernel == 'rbf':
+            self.kernel = rbf_kernel
+            K = self.kernel(X, X, gamma=self.gamma)
+        elif self.kernel == 'linear':
+            self.kernel = linear_kernel
+            K = self.kernel(X, X)
+
+        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix)
+
+        # Compute V matrix and Gramm matrix
+        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
+
+        # Create auxiliar variables
+        ones = np.ones(self.l)
+        VK = np.dot(V, K)
+        VK_perturbed_inv = np.linalg.inv(VK + self.C * np.eye(self.l))
+
+        # Compute vectors
+        A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
+        A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
+
+        n_tries = 0
+        invariants = []
+
+        while n_tries < tolerance and len(invariants) < num_invariants:
+            n_tries += 1
+
+            # Generate random hyperplane invariants
+            predicates = self._generate_random_hyperplanes(
+                num_hyperplanes=num_hyperplanes,
+            )
+
+            T_values = []
+
+            # Evaluate the random projections
+            for pred in predicates:
+                num = np.dot(pred, np.dot(K, self.A)) + self.c * np.dot(pred, ones) - np.dot(pred, self.y)
+                den = np.dot(self.y, pred) + 1
                 # print(num, den, np.abs(num) / den)
                 T_values.append(np.abs(num) / den)
 
