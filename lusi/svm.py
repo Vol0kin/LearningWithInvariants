@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import euclidean_distances
 from lusi.invariants import *
 
 import matplotlib.pyplot as plt
@@ -578,3 +579,86 @@ class SVMIRandomHyperplane(SVMI):
         if verbose:
             print('Finished training')
             print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
+
+
+class EcocSVM:
+    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
+        self.C = C
+        self.kernel = kernel
+        self.gamma = gamma
+        self.random_state = random_state
+        self.delta = delta
+
+
+    def fit(
+        self,
+        X: npt.NDArray[np.float64],
+        y: npt.NDArray[np.float64],
+        num_invariants=10,
+        num_hyperplanes=20,
+        tolerance=100,
+        use_v_matrix=False,
+        verbose=False,
+    ):
+        self.y = y.astype(float)
+
+        self.svm_original = SVMIRandomHyperplane(
+            C=self.C,
+            delta=self.delta,
+            kernel=self.kernel,
+            gamma=self.gamma,
+            random_state=self.random_state
+        )
+        
+        self.svm_original.fit(
+            X,
+            self.y,
+            num_invariants=num_invariants,
+            num_hyperplanes=num_hyperplanes,
+            tolerance=tolerance,
+            use_v_matrix=use_v_matrix,
+            verbose=verbose
+        )
+
+        # Invert labels and train another model
+        y_inverted = ~self.y.astype(bool)
+        y_inverted = y_inverted.astype(float)
+
+        self.svm_inverted = SVMIRandomHyperplane(
+            C=self.C,
+            delta=self.delta,
+            kernel=self.kernel,
+            gamma=self.gamma,
+            random_state=self.random_state
+        )
+
+        self.svm_inverted.fit(
+            X,
+            y_inverted,
+            num_invariants=num_invariants,
+            num_hyperplanes=num_hyperplanes,
+            tolerance=tolerance,
+            use_v_matrix=use_v_matrix,
+            verbose=verbose
+        )
+
+
+    def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        probabilites_p1 = self.svm_original.predict_proba(X)
+        probabilites_p2 = self.svm_inverted.predict_proba(X)
+
+        probabilites_stack = np.column_stack((probabilites_p1, probabilites_p2))
+
+        positive_class_code = np.array([1, 0])
+        negative_class_code = np.array([0, 1])
+
+        def euclidean_distance(probs, code):
+            return np.sqrt(np.sum((code - probs)**2, axis=1))
+
+        positive_class_dist = euclidean_distance(probabilites_stack, positive_class_code)
+        negative_class_dist = euclidean_distance(probabilites_stack, negative_class_code)
+
+        prediction = np.where(positive_class_dist < negative_class_dist, 1, 0)
+
+        return prediction
+
