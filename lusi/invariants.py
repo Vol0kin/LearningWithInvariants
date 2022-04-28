@@ -107,15 +107,15 @@ def random_box(X, y, only_positives=False):
 def random_hyperplane(X):
     n, d = X.shape
 
-    dimension = np.random.choice(d)
+    mean = np.zeros(d)
+    cov = np.eye(d)
+    hyperplane_vector = np.random.multivariate_normal(mean, cov)
 
-    min_dim = np.min(X[:, dimension])
-    max_dim = np.max(X[:, dimension])
-    range_dim = max_dim - min_dim
+    center_idx = np.random.choice(n)
+    center = X[center_idx]
+    hyperplane_dist = np.dot(X - center, hyperplane_vector)
 
-    plane_center = min_dim + np.random.uniform(0, 1) * range_dim
+    # The center point is considered as a positive sample
+    labels = np.where(hyperplane_dist < 0, 0, 1)
 
-    points_in_region = np.zeros(n)
-    points_in_region[X[:, dimension] > plane_center] = 1.0
-
-    return points_in_region
+    return labels
