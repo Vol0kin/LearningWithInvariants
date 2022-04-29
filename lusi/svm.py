@@ -1,22 +1,50 @@
+from enum import Enum
+
 import numpy as np
-from sklearn.metrics import euclidean_distances
 from lusi.invariants import *
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
 from sklearn.metrics.pairwise import rbf_kernel, linear_kernel
+from sklearn.base import BaseEstimator, ClassifierMixin
 
 import numpy.typing as npt
-from typing import Callable, List, Tuple
+from typing import Tuple
 
-class SVMI:
-    def __init__(self, C=1, kernel='rbf', gamma='auto', random_state=None):
+class InvariantType(str, Enum):
+    PROJECTION = 'PROJECTION'
+    HYPERPLANE = 'HYPERPLANE'
+
+class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
+    def __init__(
+        self,
+        C=1,
+        delta=1e-3,
+        kernel='rbf',
+        gamma='auto',
+        invariant_type=InvariantType.PROJECTION,
+        num_invariants=5,
+        num_gen_invariants=20,
+        tolerance=100,
+        use_v_matrix=False,
+        normalize_projections=False,
+        verbose=False,
+        random_state=None
+    ):
         self.C = C
+        self.delta = delta
         self.kernel = kernel
         self.gamma = gamma
+        self.invariant_type = invariant_type
+        self.num_invariants = num_invariants
+        self.num_gen_invariants = num_gen_invariants
+        self.tolerance = tolerance
+        self.use_v_matrix = use_v_matrix
+        self.normalize_projections = normalize_projections
+        self.verbose = verbose
         self.random_state = random_state
-
+    
 
     def _generate_V_matrix(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         # max_dims are the upper bounds of each dimension.
@@ -24,22 +52,44 @@ class SVMI:
         # using the maximum for each dimension should be a good choice
         max_dims = np.max(X, axis=0)
 
-        V = np.array(
-            [[np.prod(max_dims - np.maximum(x_i, x_j)) for x_j in X] 
-            for x_i in X]
-        )
+        V = np.array([
+            [
+                np.prod(max_dims - np.maximum(x_i, x_j))
+                for x_j in X
+            ] 
+            for x_i in X
+        ])
 
         return V
-    
+
+
+    def _generate_random_projections(self) -> npt.NDArray[np.float64]:
+        random_projections = np.array([
+            random_projection(self.X, self.y)
+            for _ in range(self.num_gen_invariants)
+        ])
+
+        if self.normalize_projections:
+            random_projections = random_projections / np.sqrt(self.d)
+
+        return random_projections
+
+
+    def _generate_random_hyperplanes(self) -> npt.NDArray[np.float64]:
+        random_hyperplanes = np.array([
+            random_hyperplane(self.X)
+            for _ in range(self.num_gen_invariants)
+        ])
+
+        return random_hyperplanes
+
 
     def _simple_inference(
         self,
         K: npt.NDArray[np.float64],
-        use_v_matrix=False,
-        verbose=False
     ) -> Tuple[npt.NDArray[np.float64], float]:
         # Compute V matrix and Gramm matrix
-        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
+        V = self._generate_V_matrix(self.X) if self.use_v_matrix else np.eye(self.l)
 
         # Helpers
         ones_vector = np.ones(self.l)
@@ -59,63 +109,121 @@ class SVMI:
         c = numerator / denominator
         A = A_b - c * A_c
 
-        if verbose:
+        if self.verbose:
             print(f'c: {c}')
             print(f'A: {A}')
 
         return A, c
-    
 
-    def _invariance_inference(
-        self,
-        K: npt.NDArray[np.float64],
-        invariant_funcs: List[Callable],
-        use_v_matrix=False,
-        verbose=False
-    ) -> Tuple[npt.NDArray[np.float64], float]:
+
+    def _invariants_inference(self, K: npt.NDArray[np.float64]):
+        if self.invariant_type == InvariantType.PROJECTION:
+            invariant_generation_func = self._generate_random_projections
+        else:
+            invariant_generation_func = self._generate_random_hyperplanes
+        
+        if self.verbose:
+            print(f'Using {self.invariant_type} invariant')
+
+        A, c = self._simple_inference(K)
+
         # Compute V matrix and Gramm matrix
-        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
+        V = self._generate_V_matrix(self.X) if self.use_v_matrix else np.eye(self.l)
 
         # Create auxiliar variables
         ones = np.ones(self.l)
         VK = np.dot(V, K)
         VK_perturbed_inv = np.linalg.inv(VK + self.C * np.eye(self.l))
 
-        # Compute invariants and store them as columns in a 2D array
-        invariant_args = {'X': self.X, 'y': self.y}
-        invariants = np.array([func(**invariant_args) for func in invariant_funcs])
-
         # Compute vectors
-        # A_s is a 2D array whose columns contain the individual A_s_i values
         A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
         A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
-        A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants])
 
-        # Create system of equations
-        c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
-        mu_1 = np.array([np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi) for phi in invariants])
-        rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
+        n_tries = 0
+        invariants = []
 
-        c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
-        mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants[k])) for s in range(len(invariant_funcs))]) for k in range(len(invariant_funcs))])
-        rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants])
+        while n_tries < self.tolerance and len(invariants) < self.num_invariants:
+            n_tries += 1
 
+            # Generate random projection invariants
+            predicates = invariant_generation_func()
 
-        a_1 = np.concatenate(([c_1], mu_1))
-        a_2 = np.vstack(([c_2], mu_2.T)).T
-        a = np.concatenate(([a_1], a_2), axis=0)
-        b = np.concatenate(([rh_1], rh_2))
+            T_values = []
 
-        solution = np.linalg.solve(a, b)
+            # Evaluate the random projections
+            for pred in predicates:
+                num = np.dot(pred, np.dot(K, A)) + c * np.dot(pred, ones) - np.dot(pred, self.y)
+                den = np.dot(self.y, pred)
+                T_values.append(np.abs(num) / den)
+            
+            T_max = np.max(T_values)
 
-        c, mu = solution[0], solution[1:]
+            if T_max > self.delta:
+                if self.verbose:
+                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
+                    # print(T_values)
 
-        # The sum can be replaced with a dot product
-        A = A_v - c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariant_funcs))]), axis=0)
+                # Update control variables
+                n_tries = 0
 
-        if verbose:
-            print('Invariants weights: ', mu)
+                invariants.append(predicates[np.argmax(T_values)])
+                invariants_arr = np.array(invariants)
 
+                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
+
+                # Create system of equations
+                c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
+
+                mu_1 = np.array([
+                    np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi)
+                    for phi in invariants_arr
+                ])
+
+                rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
+
+                c_2 = np.array([
+                    np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi)
+                    for phi in invariants
+                ])
+
+                mu_2 = np.array([
+                    np.array([
+                        np.dot(A_s[s], np.dot(K, invariants_arr[k]))
+                        for s in range(len(invariants))
+                    ])
+                    for k in range(len(invariants))
+                ])
+
+                rh_2 = np.array([
+                    np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi)
+                    for phi in invariants_arr
+                ])
+
+                a_1 = np.concatenate(([c_1], mu_1))
+                a_2 = np.vstack(([c_2], mu_2.T)).T
+                a = np.concatenate(([a_1], a_2), axis=0)
+                b = np.concatenate(([rh_1], rh_2))
+
+                solution = np.linalg.solve(a, b)
+
+                c, mu = solution[0], solution[1:]
+
+                # The sum can be replaced with a dot product
+                sum_mu_As = np.sum(
+                    np.array([
+                        mu[s] * A_s[s]
+                        for s in range(len(invariants))
+                    ]), axis=0
+                )
+                A = A_v - c * A_c - sum_mu_As
+
+                if self.verbose:
+                    print('Invariants weights: ', mu)
+
+        if self.verbose:
+            print('Finished training')
+            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
+        
         return A, c
 
 
@@ -123,14 +231,10 @@ class SVMI:
         self,
         X: npt.NDArray[np.float64],
         y: npt.NDArray[np.float64],
-        use_v_matrix=False,
-        invariant_funcs=None,
-        verbose=False
     ):
         self.X = X
         self.y = y
-        self.l = len(y)
-        self.d = X.shape[1]
+        self.l, self.d = X.shape
 
         np.random.seed(self.random_state)
 
@@ -144,12 +248,12 @@ class SVMI:
             self.kernel = linear_kernel
             K = self.kernel(X, X)
 
-        if invariant_funcs is None:
-            A, c = self._simple_inference(K, use_v_matrix=use_v_matrix, verbose=verbose)
+        if self.num_invariants == 0:
+            self.A, self.c = self._simple_inference(K)
         else:
-            A, c = self._invariance_inference(K, invariant_funcs, use_v_matrix=use_v_matrix, verbose=verbose)
-        
-        self.A, self.c = A, c
+            self.A, self.c = self._invariants_inference(K)
+
+        return self
 
 
     def predict_proba(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -197,390 +301,6 @@ class SVMI:
         plt.title(title)
         plt.show()
 
-
-class SVMIRandomProjections(SVMI):
-    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
-        super().__init__(C=C, kernel=kernel, gamma=gamma, random_state=random_state)
-        self.delta = delta
-    
-
-    def _generate_random_projections_invariants(
-        self,
-        num_projections=20,
-        normalize_projections=False,
-        only_positives=False
-    ) -> npt.NDArray[np.float64]:
-        random_projections = np.array([
-            random_projection(self.X, self.y, only_positives=only_positives)
-            for _ in range(num_projections)
-        ])
-
-        if normalize_projections:
-            random_projections = random_projections / np.sqrt(self.d)
-
-        return random_projections
-    
-
-    def fit(
-        self,
-        X: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64],
-        num_invariants=10,
-        num_projections=20,
-        tolerance=100,
-        use_v_matrix=False,
-        verbose=False,
-        normalize_projections=False,
-        only_positives=False
-    ):
-        self.X = X
-        self.y = y
-        self.l = len(y)
-        self.d = X.shape[1]
-
-        np.random.seed(self.random_state)
-
-        if self.gamma == 'auto':
-            self.gamma = 1 / self.d
-        
-        if self.kernel == 'rbf':
-            self.kernel = rbf_kernel
-            K = self.kernel(X, X, gamma=self.gamma)
-        elif self.kernel == 'linear':
-            self.kernel = linear_kernel
-            K = self.kernel(X, X)
-        
-        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix)
-
-        # Compute V matrix and Gramm matrix
-        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
-
-        # Create auxiliar variables
-        ones = np.ones(self.l)
-        VK = np.dot(V, K)
-        VK_perturbed_inv = np.linalg.inv(VK + self.C * np.eye(self.l))
-
-        # Compute vectors
-        A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
-        A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
-
-        n_tries = 0
-        invariants = []
-
-        while n_tries < tolerance and len(invariants) < num_invariants:
-            n_tries += 1
-
-            # Generate random projection invariants
-            predicates = self._generate_random_projections_invariants(
-                num_projections=num_projections,
-                normalize_projections=normalize_projections,
-                only_positives=only_positives
-            )
-
-            T_values = []
-
-            # Evaluate the random projections
-            for pred in predicates:
-                num = np.dot(pred, np.dot(K, self.A)) + self.c * np.dot(pred, ones) - np.dot(pred, self.y)
-                den = np.dot(self.y, pred)
-                T_values.append(np.abs(num) / den)
-            
-            T_max = np.max(T_values)
-
-            if T_max > self.delta:
-                if verbose:
-                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
-                    # print(T_values)
-
-                # Update control variables
-                n_tries = 0
-
-                invariants.append(predicates[np.argmax(T_values)])
-                invariants_arr = np.array(invariants)
-
-                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
-
-                # Create system of equations
-                c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
-                mu_1 = np.array([np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi) for phi in invariants_arr])
-                rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
-
-                c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
-                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(len(invariants))]) for k in range(len(invariants))])
-                rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants_arr])
-
-                a_1 = np.concatenate(([c_1], mu_1))
-                a_2 = np.vstack(([c_2], mu_2.T)).T
-                a = np.concatenate(([a_1], a_2), axis=0)
-                b = np.concatenate(([rh_1], rh_2))
-
-                solution = np.linalg.solve(a, b)
-
-                self.c, mu = solution[0], solution[1:]
-
-                # The sum can be replaced with a dot product
-                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariants))]), axis=0)
-
-                if verbose:
-                    print('Invariants weights: ', mu)
-
-        
-        if verbose:
-            print('Finished training')
-            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
-
-
-class SVMIRandomBoxes(SVMI):
-    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
-        super().__init__(C=C, kernel=kernel, gamma=gamma, random_state=random_state)
-        self.delta = delta
-
-
-    def _generate_random_boxes(
-        self,
-        num_boxes=20,
-        only_positives=False,
-    ) -> npt.NDArray[np.float64]:
-        random_boxes = np.array([
-            random_box(self.X, self.y, only_positives=only_positives)
-            for _ in range(num_boxes)
-        ])
-
-        return random_boxes
-
-
-    def fit(
-        self,
-        X: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64],
-        num_invariants=10,
-        num_boxes=20,
-        tolerance=100,
-        use_v_matrix=False,
-        only_positives=False,
-        verbose=False,
-    ):
-        self.X = X
-        self.y = y
-        self.l = len(y)
-        self.d = X.shape[1]
-
-        np.random.seed(self.random_state)
-
-        if self.gamma == 'auto':
-            self.gamma = 1 / self.d
-
-        if self.kernel == 'rbf':
-            self.kernel = rbf_kernel
-            K = self.kernel(X, X, gamma=self.gamma)
-        elif self.kernel == 'linear':
-            self.kernel = linear_kernel
-            K = self.kernel(X, X)
-
-        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix)
-
-        # Compute V matrix and Gramm matrix
-        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
-
-        # Create auxiliar variables
-        ones = np.ones(self.l)
-        VK = np.dot(V, K)
-        VK_perturbed_inv = np.linalg.inv(VK + self.C * np.eye(self.l))
-
-        # Compute vectors
-        A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
-        A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
-
-        n_tries = 0
-        invariants = [] if only_positives else [positive_class(y=self.y)]
-
-        while n_tries < tolerance and len(invariants) < num_invariants:
-            n_tries += 1
-
-            # Generate random projection invariants
-            predicates = self._generate_random_boxes(
-                num_boxes=num_boxes,
-                only_positives=only_positives
-            )
-
-            T_values = []
-
-            # Evaluate the random projections
-            for pred in predicates:
-                num = np.dot(pred, np.dot(K, self.A)) + self.c * np.dot(pred, ones) - np.dot(pred, self.y)
-                den = np.dot(self.y, pred)
-                # print(num, den, np.abs(num) / den)
-                T_values.append(np.abs(num) / den)
-
-            T_max = np.max(T_values)
-
-            if T_max > self.delta:
-                if verbose:
-                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
-                    # print(T_values)
-
-                # Update control variables
-                n_tries = 0
-
-                invariants.append(predicates[np.argmax(T_values)])
-                invariants_arr = np.array(invariants)
-
-                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
-
-                # Create system of equations
-                c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
-                mu_1 = np.array([np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi) for phi in invariants_arr])
-                rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
-
-                c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
-                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(len(invariants))]) for k in range(len(invariants))])
-                rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants_arr])
-
-                a_1 = np.concatenate(([c_1], mu_1))
-                a_2 = np.vstack(([c_2], mu_2.T)).T
-                a = np.concatenate(([a_1], a_2), axis=0)
-                b = np.concatenate(([rh_1], rh_2))
-
-                solution = np.linalg.solve(a, b)
-
-                self.c, mu = solution[0], solution[1:]
-
-                # The sum can be replaced with a dot product
-                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariants))]), axis=0)
-
-                if verbose:
-                    print('Invariants weights: ', mu)
-
-
-        if verbose:
-            print('Finished training')
-            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
-
-
-class SVMIRandomHyperplane(SVMI):
-    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
-        super().__init__(C=C, kernel=kernel, gamma=gamma, random_state=random_state)
-        self.delta = delta
-
-
-    def _generate_random_hyperplanes(
-        self,
-        num_hyperplanes=20,
-    ) -> npt.NDArray[np.float64]:
-        random_boxes = np.array([
-            random_hyperplane(self.X)
-            for _ in range(num_hyperplanes)
-        ])
-
-        return random_boxes
-
-
-    def fit(
-        self,
-        X: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64],
-        num_invariants=10,
-        num_hyperplanes=20,
-        tolerance=100,
-        use_v_matrix=False,
-        verbose=False,
-    ):
-        self.X = X
-        self.y = y
-        self.l = len(y)
-        self.d = X.shape[1]
-
-        np.random.seed(self.random_state)
-
-        if self.gamma == 'auto':
-            self.gamma = 1 / self.d
-
-        if self.kernel == 'rbf':
-            self.kernel = rbf_kernel
-            K = self.kernel(X, X, gamma=self.gamma)
-        elif self.kernel == 'linear':
-            self.kernel = linear_kernel
-            K = self.kernel(X, X)
-
-        self.A, self.c = self._simple_inference(K, use_v_matrix=use_v_matrix)
-
-        # Compute V matrix and Gramm matrix
-        V = self._generate_V_matrix(self.X) if use_v_matrix else np.eye(self.l)
-
-        # Create auxiliar variables
-        ones = np.ones(self.l)
-        VK = np.dot(V, K)
-        VK_perturbed_inv = np.linalg.inv(VK + self.C * np.eye(self.l))
-
-        # Compute vectors
-        A_v = np.dot(VK_perturbed_inv, np.dot(V, self.y))
-        A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
-
-        n_tries = 0
-        invariants = []
-
-        while n_tries < tolerance and len(invariants) < num_invariants:
-            n_tries += 1
-
-            # Generate random hyperplane invariants
-            predicates = self._generate_random_hyperplanes(
-                num_hyperplanes=num_hyperplanes,
-            )
-
-            T_values = []
-
-            # Evaluate the random projections
-            for pred in predicates:
-                num = np.dot(pred, np.dot(K, self.A)) + self.c * np.dot(pred, ones) - np.dot(pred, self.y)
-                den = np.dot(self.y, pred) + 1
-                # print(num, den, np.abs(num) / den)
-                T_values.append(np.abs(num) / den)
-
-            T_max = np.max(T_values)
-
-            if T_max > self.delta:
-                if verbose:
-                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
-                    # print(T_values)
-
-                # Update control variables
-                n_tries = 0
-
-                invariants.append(predicates[np.argmax(T_values)])
-                invariants_arr = np.array(invariants)
-
-                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
-
-                # Create system of equations
-                c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
-                mu_1 = np.array([np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi) for phi in invariants_arr])
-                rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
-
-                c_2 = np.array([np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi) for phi in invariants])
-                mu_2 = np.array([np.array([np.dot(A_s[s], np.dot(K, invariants_arr[k])) for s in range(len(invariants))]) for k in range(len(invariants))])
-                rh_2 = np.array([np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi) for phi in invariants_arr])
-
-                a_1 = np.concatenate(([c_1], mu_1))
-                a_2 = np.vstack(([c_2], mu_2.T)).T
-                a = np.concatenate(([a_1], a_2), axis=0)
-                b = np.concatenate(([rh_1], rh_2))
-
-                solution = np.linalg.solve(a, b)
-
-                self.c, mu = solution[0], solution[1:]
-
-                # The sum can be replaced with a dot product
-                self.A = A_v - self.c * A_c - np.sum(np.array([mu[s] * A_s[s] for s in range(len(invariants))]), axis=0)
-
-                if verbose:
-                    print('Invariants weights: ', mu)
-
-
-        if verbose:
-            print('Finished training')
-            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
-
-
 class EcocSVM:
     def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
         self.C = C
@@ -602,7 +322,7 @@ class EcocSVM:
     ):
         self.y = y.astype(float)
 
-        self.svm_original = SVMIRandomHyperplane(
+        self.svm_original = SVMRandomInvariants(
             C=self.C,
             delta=self.delta,
             kernel=self.kernel,
@@ -624,7 +344,7 @@ class EcocSVM:
         y_inverted = ~self.y.astype(bool)
         y_inverted = y_inverted.astype(float)
 
-        self.svm_inverted = SVMIRandomHyperplane(
+        self.svm_inverted = SVMRandomInvariants(
             C=self.C,
             delta=self.delta,
             kernel=self.kernel,

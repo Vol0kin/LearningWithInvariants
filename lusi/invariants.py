@@ -45,7 +45,7 @@ def _get_positive_class_projection(projected_data, y):
     return points_in_region
 
 
-def random_projection(X, y, only_positives=False):
+def random_projection(X, y):
     d = X.shape[1]
 
     mean = np.zeros(d)
@@ -54,10 +54,7 @@ def random_projection(X, y, only_positives=False):
 
     projected_data = np.dot(X, projection_vector)
 
-    if not only_positives:
-        return projected_data
-
-    return _get_positive_class_projection(projected_data, y)
+    return projected_data
 
 
 def box(**kwargs):
