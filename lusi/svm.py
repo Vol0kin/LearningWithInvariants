@@ -1,6 +1,7 @@
 from enum import Enum
 
 import numpy as np
+from scipy.spatial import distance
 from lusi.invariants import *
 
 import matplotlib.pyplot as plt
@@ -153,7 +154,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
             # Evaluate the random projections
             for pred in predicates:
                 num = np.dot(pred, np.dot(K, A)) + c * np.dot(pred, ones) - np.dot(pred, self.y)
-                den = np.dot(self.y, pred)
+                den = np.dot(self.y, pred) + 1
                 T_values.append(np.abs(num) / den)
             
             T_max = np.max(T_values)
@@ -301,84 +302,74 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         plt.title(title)
         plt.show()
 
-class EcocSVM:
-    def __init__(self, C=1, delta=1e-3, kernel='rbf', gamma='auto', random_state=None):
-        self.C = C
-        self.kernel = kernel
-        self.gamma = gamma
-        self.random_state = random_state
-        self.delta = delta
-
-
-    def fit(
+class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
+    def __init__(
         self,
-        X: npt.NDArray[np.float64],
-        y: npt.NDArray[np.float64],
-        num_invariants=10,
-        num_hyperplanes=20,
+        encoding: npt.NDArray[np.float64],
+        C=1,
+        delta=1e-3,
+        kernel='rbf',
+        gamma='auto',
+        invariant_type=InvariantType.PROJECTION,
+        num_invariants=5,
+        num_gen_invariants=20,
         tolerance=100,
         use_v_matrix=False,
+        normalize_projections=False,
         verbose=False,
+        random_state=None
     ):
-        self.y = y.astype(float)
+        self.encoding = encoding
+        self.C = C
+        self.delta = delta
+        self.kernel = kernel
+        self.gamma = gamma
+        self.invariant_type = invariant_type
+        self.num_invariants = num_invariants
+        self.num_gen_invariants = num_gen_invariants
+        self.tolerance = tolerance
+        self.use_v_matrix = use_v_matrix
+        self.normalize_projections = normalize_projections
+        self.verbose = verbose
+        self.random_state = random_state
 
-        self.svm_original = SVMRandomInvariants(
-            C=self.C,
-            delta=self.delta,
-            kernel=self.kernel,
-            gamma=self.gamma,
-            random_state=self.random_state
-        )
-        
-        self.svm_original.fit(
-            X,
-            self.y,
-            num_invariants=num_invariants,
-            num_hyperplanes=num_hyperplanes,
-            tolerance=tolerance,
-            use_v_matrix=use_v_matrix,
-            verbose=verbose
-        )
 
-        # Invert labels and train another model
-        y_inverted = ~self.y.astype(bool)
-        y_inverted = y_inverted.astype(float)
+    def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]):
+        self.models = []
+        num_problems = self.encoding.shape[1]
 
-        self.svm_inverted = SVMRandomInvariants(
-            C=self.C,
-            delta=self.delta,
-            kernel=self.kernel,
-            gamma=self.gamma,
-            random_state=self.random_state
-        )
+        for problem in range(num_problems):
+            encoded_y = np.array([self.encoding[label, problem] for label in y])
 
-        self.svm_inverted.fit(
-            X,
-            y_inverted,
-            num_invariants=num_invariants,
-            num_hyperplanes=num_hyperplanes,
-            tolerance=tolerance,
-            use_v_matrix=use_v_matrix,
-            verbose=verbose
-        )
+            model = SVMRandomInvariants(
+                C = self.C,
+                delta = self.delta,
+                kernel = self.kernel,
+                gamma = self.gamma,
+                invariant_type = self.invariant_type,
+                num_invariants = self.num_invariants,
+                num_gen_invariants = self.num_gen_invariants,
+                tolerance = self.tolerance,
+                use_v_matrix = self.use_v_matrix,
+                normalize_projections = self.normalize_projections,
+                verbose = self.verbose,
+                random_state = self.random_state
+            )
+
+            model.fit(X, encoded_y)
+            self.models.append(model)
+
+        return self
 
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        probabilites_p1 = self.svm_original.predict_proba(X)
-        probabilites_p2 = self.svm_inverted.predict_proba(X)
+        probabilites = np.column_stack([
+            model.predict_proba(X)
+            for model in self.models
+        ])
 
-        probabilites_stack = np.column_stack((probabilites_p1, probabilites_p2))
-
-        positive_class_code = np.array([1, 0])
-        negative_class_code = np.array([0, 1])
-
-        def euclidean_distance(probs, code):
-            return np.sqrt(np.sum((code - probs)**2, axis=1))
-
-        positive_class_dist = euclidean_distance(probabilites_stack, positive_class_code)
-        negative_class_dist = euclidean_distance(probabilites_stack, negative_class_code)
-
-        prediction = np.where(positive_class_dist < negative_class_dist, 1, 0)
+        dists = distance.cdist(self.encoding, probabilites, 'euclidean')
+        prediction = np.argmax(dists, axis=0)
 
         return prediction
 
