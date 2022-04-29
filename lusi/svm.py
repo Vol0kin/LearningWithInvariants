@@ -13,7 +13,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 import numpy.typing as npt
 from typing import Tuple
 
-class InvariantType(str, Enum):
+class InvariantTypes(str, Enum):
     PROJECTION = 'PROJECTION'
     HYPERPLANE = 'HYPERPLANE'
 
@@ -24,7 +24,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         delta=1e-3,
         kernel='rbf',
         gamma='auto',
-        invariant_type=InvariantType.PROJECTION,
+        invariant_type=InvariantTypes.PROJECTION,
         num_invariants=5,
         num_gen_invariants=20,
         tolerance=100,
@@ -118,7 +118,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
 
     def _invariants_inference(self, K: npt.NDArray[np.float64]):
-        if self.invariant_type == InvariantType.PROJECTION:
+        if self.invariant_type == InvariantTypes.PROJECTION:
             invariant_generation_func = self._generate_random_projections
         else:
             invariant_generation_func = self._generate_random_hyperplanes
@@ -310,7 +310,7 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         delta=1e-3,
         kernel='rbf',
         gamma='auto',
-        invariant_type=InvariantType.PROJECTION,
+        invariant_type=InvariantTypes.PROJECTION,
         num_invariants=5,
         num_gen_invariants=20,
         tolerance=100,
