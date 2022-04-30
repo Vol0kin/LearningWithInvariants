@@ -320,18 +320,20 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         random_state=None
     ):
         self.encoding = encoding
-        self.C = C
-        self.delta = delta
-        self.kernel = kernel
-        self.gamma = gamma
-        self.invariant_type = invariant_type
-        self.num_invariants = num_invariants
-        self.num_gen_invariants = num_gen_invariants
-        self.tolerance = tolerance
-        self.use_v_matrix = use_v_matrix
-        self.normalize_projections = normalize_projections
-        self.verbose = verbose
-        self.random_state = random_state
+        self.model_params = {
+            'C' : C,
+            'delta' : delta,
+            'kernel' : kernel,
+            'gamma' : gamma,
+            'invariant_type' : invariant_type,
+            'num_invariants' : num_invariants,
+            'num_gen_invariants' : num_gen_invariants,
+            'tolerance' : tolerance,
+            'use_v_matrix' : use_v_matrix,
+            'normalize_projections' : normalize_projections,
+            'verbose' : verbose,
+            'random_state' : random_state,
+        }
 
 
     def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]):
@@ -341,20 +343,7 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         for problem in range(num_problems):
             encoded_y = np.array([self.encoding[label, problem] for label in y])
 
-            model = SVMRandomInvariants(
-                C = self.C,
-                delta = self.delta,
-                kernel = self.kernel,
-                gamma = self.gamma,
-                invariant_type = self.invariant_type,
-                num_invariants = self.num_invariants,
-                num_gen_invariants = self.num_gen_invariants,
-                tolerance = self.tolerance,
-                use_v_matrix = self.use_v_matrix,
-                normalize_projections = self.normalize_projections,
-                verbose = self.verbose,
-                random_state = self.random_state
-            )
+            model = SVMRandomInvariants(**self.model_params)
 
             model.fit(X, encoded_y)
             self.models.append(model)
