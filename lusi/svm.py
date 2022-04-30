@@ -369,7 +369,7 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         ])
 
         dists = distance.cdist(self.encoding, probabilites, 'euclidean')
-        prediction = np.argmax(dists, axis=0)
+        prediction = np.argmin(dists, axis=0)
 
         return prediction
 
