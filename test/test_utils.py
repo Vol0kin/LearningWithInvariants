@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from lusi.utils import generate_encoded_labels
+from lusi.utils import generate_encoded_problems
 
 @pytest.fixture
 def labels():
@@ -22,7 +22,7 @@ def encoding():
 
 
 def test_generate_encoded_labels(encoding, labels):
-    encoded_problems = generate_encoded_labels(encoding, labels)
+    encoded_problems = generate_encoded_problems(encoding, labels)
 
     assert np.all(encoded_problems[0, labels == 0] == encoding[0, 0])
     assert np.all(encoded_problems[2, labels == 2] == encoding[2, 2])

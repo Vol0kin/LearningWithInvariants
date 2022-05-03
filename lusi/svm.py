@@ -3,7 +3,7 @@ from enum import Enum
 import numpy as np
 from scipy.spatial import distance
 from lusi.invariants import *
-from .utils import generate_encoded_labels
+from .utils import generate_encoded_problems
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -340,7 +340,7 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
     def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]):
         self.models = []
 
-        encoded_problems = generate_encoded_labels(self.encoding, y)
+        encoded_problems = generate_encoded_problems(self.encoding, y)
 
         for encoded_y in encoded_problems:
             model = SVMRandomInvariants(**self.model_params)

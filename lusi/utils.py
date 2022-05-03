@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 
-def generate_encoded_labels(
+def generate_encoded_problems(
     encoding: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64]
 ) -> npt.NDArray[np.float64]:
