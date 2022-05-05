@@ -1,9 +1,8 @@
 from enum import Enum
 
 import numpy as np
-from scipy.spatial import distance
 from lusi.invariants import *
-from .utils import generate_encoded_problems
+from .utils import generate_encoding, generate_decoding
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -340,9 +339,9 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
     def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]):
         self.models = []
 
-        encoded_problems = generate_encoded_problems(self.encoding, y)
+        encodings = generate_encoding(self.encoding, y)
 
-        for encoded_y in encoded_problems:
+        for encoded_y in encodings:
             model = SVMRandomInvariants(**self.model_params)
 
             model.fit(X, encoded_y)
@@ -357,8 +356,6 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
             for model in self.models
         ])
 
-        dists = distance.cdist(self.encoding, probabilites, 'euclidean')
-        prediction = np.argmin(dists, axis=0)
+        prediction = generate_decoding(self.encoding, probabilites)
 
         return prediction
-
