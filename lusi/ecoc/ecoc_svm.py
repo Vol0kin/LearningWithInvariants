@@ -6,6 +6,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from .utils import generate_encoding, generate_decoding
 
 from ..types import InvariantTypes
+from ..svm import SVMRandomInvariants
 
 class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
     def __init__(
@@ -25,20 +26,18 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         random_state=None
     ):
         self.encoding = encoding
-        self.model_params = {
-            'C' : C,
-            'delta' : delta,
-            'kernel' : kernel,
-            'gamma' : gamma,
-            'invariant_type' : invariant_type,
-            'num_invariants' : num_invariants,
-            'num_gen_invariants' : num_gen_invariants,
-            'tolerance' : tolerance,
-            'use_v_matrix' : use_v_matrix,
-            'normalize_projections' : normalize_projections,
-            'verbose' : verbose,
-            'random_state' : random_state,
-        }
+        self.C = C
+        self.delta = delta
+        self.kernel = kernel
+        self.gamma = gamma
+        self.invariant_type = invariant_type
+        self.num_invariants = num_invariants
+        self.num_gen_invariants = num_gen_invariants
+        self.tolerance = tolerance
+        self.use_v_matrix = use_v_matrix
+        self.normalize_projections = normalize_projections
+        self.verbose = verbose
+        self.random_state = random_state
 
 
     def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]):
@@ -47,7 +46,20 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         encodings = generate_encoding(self.encoding, y)
 
         for encoded_y in encodings:
-            model = SVMRandomInvariants(**self.model_params)
+            model = SVMRandomInvariants(
+                C = self.C,
+                delta = self.delta,
+                kernel = self.kernel,
+                gamma = self.gamma,
+                invariant_type = self.invariant_type,
+                num_invariants = self.num_invariants,
+                num_gen_invariants = self.num_gen_invariants,
+                tolerance = self.tolerance,
+                use_v_matrix = self.use_v_matrix,
+                normalize_projections = self.normalize_projections,
+                verbose = self.verbose,
+                random_state = self.random_state,
+            )
 
             model.fit(X, encoded_y)
             self.models.append(model)
