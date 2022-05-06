@@ -61,7 +61,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
     def _generate_random_projections(self) -> npt.NDArray[np.float64]:
         random_projections = np.array([
-            random_projection(self.X, self.y)
+            random_projection(self.X)
             for _ in range(self.num_gen_invariants)
         ])
 

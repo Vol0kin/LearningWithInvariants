@@ -1,51 +1,14 @@
 import numpy as np
 
-def positive_class(**kwargs):
-    y = kwargs['y']
-
+def positive_class(y):
     return np.ones(len(y))
 
 
-def mean_in_dimension(dim):
-    def inner_mean_in_dimension(**kwargs):
-        X = kwargs['X']
-
-        return X[:, dim]
-    
-    return inner_mean_in_dimension
+def mean_in_dimension(X, dim):
+    return X[:, dim]
 
 
-def _get_positive_class_projection(projected_data, y):
-    created_region = False
-    positive_class_idx = np.where(y == 1)[0]
-
-    while not created_region:
-        center_idx = np.random.choice(positive_class_idx)
-        center_point = projected_data[center_idx]
-        radius_factor = np.random.uniform(0.15, 0.25)
-
-        min_dim = np.min(projected_data)
-        max_dim = np.max(projected_data)
-        range_dim = max_dim - min_dim
-
-        radius = range_dim * radius_factor
-        min_range = center_point - radius
-        max_range = center_point + radius
-
-        points_in_region = np.where(
-            (projected_data >= min_range) & (projected_data <= max_range),
-            1.0,
-            0.0
-        )
-
-        points_in_region = np.logical_and(points_in_region, y).astype(float)
-
-        created_region = len(np.where(points_in_region > 0)[0]) > 1
-    
-    return points_in_region
-
-
-def random_projection(X, y):
+def random_projection(X):
     d = X.shape[1]
 
     mean = np.zeros(d)
@@ -57,8 +20,7 @@ def random_projection(X, y):
     return projected_data
 
 
-def box(**kwargs):
-    X = kwargs['X']
+def box(X):
     box_limit = 1.5
 
     inside_box = np.logical_and(X[:, [1, 5]] >= -box_limit, X[:, [1, 5]] <= box_limit)
