@@ -238,11 +238,11 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
             self.gamma = 1 / self.d
         
         if self.kernel == 'rbf':
-            self.kernel = rbf_kernel
-            K = self.kernel(X, X, gamma=self.gamma)
+            self.kernel_func = rbf_kernel
+            K = self.kernel_func(X, X, gamma=self.gamma)
         elif self.kernel == 'linear':
-            self.kernel = linear_kernel
-            K = self.kernel(X, X)
+            self.kernel_func = linear_kernel
+            K = self.kernel_func(X, X)
 
         if self.num_invariants == 0:
             self.A, self.c = self._simple_inference(K)
@@ -274,7 +274,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         preds = []
 
         for z in Z:
-            preds.append(np.dot(self.A, self.kernel(self.X,[z])) + self.c)
+            preds.append(np.dot(self.A, self.kernel_func(self.X,[z])) + self.c)
 
         return np.array(preds).flatten()
 
