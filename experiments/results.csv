@@ -1,0 +1,76 @@
+problem,size,model,accuracy
+Balance scale,80%,Baseline,0.904
+Balance scale,80%,Random Projections,0.904
+Balance scale,80%,Random Hyperplanes,0.848
+Balance scale,50%,Baseline,0.8881789137380192
+Balance scale,50%,Random Projections,0.8881789137380192
+Balance scale,50%,Random Hyperplanes,0.8785942492012779
+Balance scale,30%,Baseline,0.8995433789954338
+Balance scale,30%,Random Projections,0.8995433789954338
+Balance scale,30%,Random Hyperplanes,0.8881278538812786
+Balance scale,20%,Baseline,0.894
+Balance scale,20%,Random Projections,0.896
+Balance scale,20%,Random Hyperplanes,0.882
+Balance scale,10%,Baseline,0.8774422735346359
+Balance scale,10%,Random Projections,0.8756660746003553
+Balance scale,10%,Random Hyperplanes,0.827708703374778
+Dermatology,80%,Baseline,0.9594594594594594
+Dermatology,80%,Random Projections,0.9594594594594594
+Dermatology,80%,Random Hyperplanes,0.9594594594594594
+Dermatology,50%,Baseline,0.9344262295081968
+Dermatology,50%,Random Projections,0.9289617486338798
+Dermatology,50%,Random Hyperplanes,0.9508196721311475
+Dermatology,30%,Baseline,0.9182879377431906
+Dermatology,30%,Random Projections,0.9221789883268483
+Dermatology,30%,Random Hyperplanes,0.933852140077821
+Dermatology,20%,Baseline,0.8737201365187713
+Dermatology,20%,Random Projections,0.9180887372013652
+Dermatology,20%,Random Hyperplanes,0.8976109215017065
+Dermatology,10%,Baseline,0.7878787878787878
+Dermatology,10%,Random Projections,0.8909090909090909
+Dermatology,10%,Random Hyperplanes,0.8757575757575757
+Ecoli,80%,Baseline,0.8382352941176471
+Ecoli,80%,Random Projections,0.8088235294117647
+Ecoli,80%,Random Hyperplanes,0.8529411764705882
+Ecoli,50%,Baseline,0.8154761904761905
+Ecoli,50%,Random Projections,0.7857142857142857
+Ecoli,50%,Random Hyperplanes,0.7797619047619048
+Ecoli,30%,Baseline,0.7584745762711864
+Ecoli,30%,Random Projections,0.7669491525423728
+Ecoli,30%,Random Hyperplanes,0.6949152542372882
+Ecoli,20%,Baseline,0.758364312267658
+Ecoli,20%,Random Projections,0.7955390334572491
+Ecoli,20%,Random Hyperplanes,0.7174721189591078
+Ecoli,10%,Baseline,0.6237623762376238
+Ecoli,10%,Random Projections,0.49504950495049505
+Ecoli,10%,Random Hyperplanes,0.5643564356435643
+Iris,80%,Baseline,0.9666666666666667
+Iris,80%,Random Projections,1.0
+Iris,80%,Random Hyperplanes,1.0
+Iris,50%,Baseline,0.9866666666666667
+Iris,50%,Random Projections,0.9733333333333334
+Iris,50%,Random Hyperplanes,0.9466666666666667
+Iris,30%,Baseline,0.9714285714285714
+Iris,30%,Random Projections,0.9714285714285714
+Iris,30%,Random Hyperplanes,0.8476190476190476
+Iris,20%,Baseline,0.9666666666666667
+Iris,20%,Random Projections,0.9583333333333334
+Iris,20%,Random Hyperplanes,0.9083333333333333
+Iris,10%,Baseline,0.9555555555555556
+Iris,10%,Random Projections,0.9111111111111111
+Iris,10%,Random Hyperplanes,0.9481481481481482
+Yeast,80%,Baseline,0.5858585858585859
+Yeast,80%,Random Projections,0.5488215488215489
+Yeast,80%,Random Hyperplanes,0.5488215488215489
+Yeast,50%,Baseline,0.5660377358490566
+Yeast,50%,Random Projections,0.555256064690027
+Yeast,50%,Random Hyperplanes,0.5283018867924528
+Yeast,30%,Baseline,0.5283926852743022
+Yeast,30%,Random Projections,0.5091434071222329
+Yeast,30%,Random Hyperplanes,0.48604427333974976
+Yeast,20%,Baseline,0.5244107744107744
+Yeast,20%,Random Projections,0.5227272727272727
+Yeast,20%,Random Hyperplanes,0.35353535353535354
+Yeast,10%,Baseline,0.4648203592814371
+Yeast,10%,Random Projections,0.4393712574850299
+Yeast,10%,Random Hyperplanes,0.4101796407185629
