@@ -149,8 +149,9 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
             # Evaluate the random projections
             for pred in predicates:
                 num = np.dot(pred, np.dot(K, A)) + c * np.dot(pred, ones) - np.dot(pred, self.y)
-                den = np.dot(self.y, pred) + 1
-                T_values.append(np.abs(num) / den)
+                den = np.dot(self.y, pred)
+                T = np.abs(num) / den if den > 0 else 0
+                T_values.append(T)
             
             T_max = np.max(T_values)
 
