@@ -1,35 +1,86 @@
 % Chapter Template
 
-\chapter{Introduction} % Main chapter title
+\chapter{Introduction}
 
-\label{ChapterX} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+\label{Chapter1}
 
 %----------------------------------------------------------------------------------------
-%	SECTION 1
+%	SECTION 1: MOTIVATION AND BRIEF DESCRIPTION OF THE PROJECT
 %----------------------------------------------------------------------------------------
 
-\section{Main Section 1}
+\section{Motivation and brief description of the project}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ultricies lacinia euismod. Nam tempus risus in dolor rhoncus in interdum enim tincidunt. Donec vel nunc neque. In condimentum ullamcorper quam non consequat. Fusce sagittis tempor feugiat. Fusce magna erat, molestie eu convallis ut, tempus sed arcu. Quisque molestie, ante a tincidunt ullamcorper, sapien enim dignissim lacus, in semper nibh erat lobortis purus. Integer dapibus ligula ac risus convallis pellentesque.
+The current machine learning paradigms consider no further information apart from the data
+samples when trying to learn a model that can represent the data and be used later on
+to infer information about new samples. During the training process, the current methods
+try to minimize the error with respect to the original data, thus searching the function
+that best fits the data in an infinite space of functions. However, the training data has
+statistical information that can help reduce the searching space to a region of it, allowing
+also to find functions that better fit the data.
 
-%-----------------------------------
-%	SUBSECTION 1
-%-----------------------------------
-\subsection{Subsection 1}
+A new learning paradigm that takes into account the statistical information of the training data
+in the form of statistical invariants has been recently proposed by \cite{Vapnik2019}. Thanks to it,
+statistical information of the problem can be used in the learning process, which might
+be overlooked by most of the models because some relationships between variables are hard to
+spot or require prior knowledge that the model does not have access to. Nonetheless,
+it seems that this learning paradigm has not been fully explored or applied that much in practice.
+Therefore, in this work we would like to further explore the possible applications of this
+paradigm and whether it can be made more general, without requiring prior knowledge of the problem.
 
-Nunc posuere quam at lectus tristique eu ultrices augue venenatis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam erat volutpat. Vivamus sodales tortor eget quam adipiscing in vulputate ante ullamcorper. Sed eros ante, lacinia et sollicitudin et, aliquam sit amet augue. In hac habitasse platea dictumst.
+%----------------------------------------------------------------------------------------
+%	SECTION 2: GOALS AND OBJECTIVES
+%----------------------------------------------------------------------------------------
 
-%-----------------------------------
-%	SUBSECTION 2
-%-----------------------------------
+\section{Goals and objectives}
 
-\subsection{Subsection 2}
-Morbi rutrum odio eget arcu adipiscing sodales. Aenean et purus a est pulvinar pellentesque. Cras in elit neque, quis varius elit. Phasellus fringilla, nibh eu tempus venenatis, dolor elit posuere quam, quis adipiscing urna leo nec orci. Sed nec nulla auctor odio aliquet consequat. Ut nec nulla in ante ullamcorper aliquam at sed dolor. Phasellus fermentum magna in augue gravida cursus. Cras sed pretium lorem. Pellentesque eget ornare odio. Proin accumsan, massa viverra cursus pharetra, ipsum nisi lobortis velit, a malesuada dolor lorem eu neque.
+In this thesis we aim to
+\begin{enumerate*}[label=(\roman*)]
+    \item understand and further explore the application of the invariants in the learning
+    problem,
+    \item propose new invariants that require no previous knowledge of the problem and
+    thus can be applied to multiple domains and
+    \item create a small module that implements these invariants and allows them
+    to be applied to binary and multiclass classification problems.
+\end{enumerate*}
+
+In order to accomplish this work, there are some milestones that must be achieved:
+
+\begin{enumerate}
+    \item Understand and reproduce the methods and some of the experiments and results of the
+    original paper. Because there is no source code available, we have to start from scratch.
+    \item Propose new invariants and apply them to the same problems as the ones in the paper
+    to get an initial idea of how they work.
+    \item Build a wrapper around the binary classifier to enable its use in multiclass classification
+    problems.
+    \item Experiment with multiclass classification problems to test the proposed invariants and
+    compare them to a baseline to see whether they are actually helping or not during the learning process.
+\end{enumerate}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3: BRIEF SUMMARY OF THE RESULTS
+%----------------------------------------------------------------------------------------
+
+\section{Brief summary of the results}
+
+% TODO: Waiting for final results
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4: LAYOUT
+%----------------------------------------------------------------------------------------
+
+\section{Layout}
+
+This thesis is structured as follows. In Chapter \ref{Chapter2} we are going to discuss the
+background work that has inspired this project, showing its main contributions and results.
+Then, in Chapter \ref{Chapter3} we are going to present a series of proposals that
+aim to make the original work more general and easy to apply to different problem. Following
+the description of the proposed methods, in Chapter \ref{Chapter4} we are going to study how
+they work in practice and see what results can be achieved with them. Finally, in Chapter
+\ref{Chapter5} we are going to briefly discuss what conclusions can be drawn from this work
+and what the future work that can be done.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
 %----------------------------------------------------------------------------------------
 
-\section{Main Section 2}
-
-Sed ullamcorper quam eu nisl interdum at interdum enim egestas. Aliquam placerat justo sed lectus lobortis ut porta nisl porttitor. Vestibulum mi dolor, lacinia molestie gravida at, tempus vitae ligula. Donec eget quam sapien, in viverra eros. Donec pellentesque justo a massa fringilla non vestibulum metus vestibulum. Vestibulum in orci quis felis tempor lacinia. Vivamus ornare ultrices facilisis. Ut hendrerit volutpat vulputate. Morbi condimentum venenatis augue, id porta ipsum vulputate in. Curabitur luctus tempus justo. Vestibulum risus lectus, adipiscing nec condimentum quis, condimentum nec nisl. Aliquam dictum sagittis velit sed iaculis. Morbi tristique augue sit amet nulla pulvinar id facilisis ligula mollis. Nam elit libero, tincidunt ut aliquam at, molestie in quam. Aenean rhoncus vehicula hendrerit.
