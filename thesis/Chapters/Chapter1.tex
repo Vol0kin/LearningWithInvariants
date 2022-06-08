@@ -24,6 +24,7 @@ statistical information of the problem can be used in the learning process, whic
 be overlooked by most of the models because some relationships between variables are hard to
 spot or require prior knowledge that the model does not have access to. Nonetheless,
 it seems that this learning paradigm has not been fully explored or applied that much in practice.
+
 Therefore, in this work we would like to further explore the possible applications of this
 paradigm and whether it can be made more general, without requiring prior knowledge of the problem.
 
@@ -43,17 +44,20 @@ In this thesis we aim to
     to be applied to binary and multiclass classification problems.
 \end{enumerate*}
 
-In order to accomplish this work, there are some milestones that must be achieved:
+In order to accomplish these goals, we propose a series of milestones that must be achieved
+first:
 
 \begin{enumerate}
-    \item Understand and reproduce the methods and some of the experiments and results of the
-    original paper. Because there is no source code available, we have to start from scratch.
+    \item Understand the original paper and reproduce it, which implies implementing the proposed
+    algorithms for learning with statistical invariants and reproducing some of the experiments
+    and results. Because there is no source code available, we have to start from scratch.
     \item Propose new invariants and apply them to the same problems as the ones in the paper
     to get an initial idea of how they work.
-    \item Build a wrapper around the binary classifier to enable its use in multiclass classification
-    problems.
+    \item Build a wrapper around the previously defined binary classifier to enable its use
+    in multiclass classification problems.
     \item Experiment with multiclass classification problems to test the proposed invariants and
-    compare them to a baseline to see whether they are actually helping or not during the learning process.
+    compare them to a baseline to see whether they are actually helping or not during the learning
+    process.
 \end{enumerate}
 
 
