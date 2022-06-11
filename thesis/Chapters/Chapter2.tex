@@ -3,22 +3,54 @@
 \chapter{Learning using statistical invariants} % Main chapter title
 \label{Chapter2}
 
+Given that this work intends to explore the applications of the invariants in the learning
+process, we first need to introduce the background work that proposed this new learning
+paradigm, which is called LUSI (Learning Using Statistical Invariants).
 
-\textcolor{red}{Aquí va toda la info previa sobre LUSI}
-
-
-\label{ChapterX} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+This chapter intends to provide the necessary background to understand the basis of this work
+and an overview of the most relevant aspects of the original paper that presented the LUSI paradigm,
+which was proposed by \cite{Vapnik2019}. For further information and more details, please
+refer to the original paper.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 1
 %----------------------------------------------------------------------------------------
+\section{Weak convergence and the LUSI paradigm}
+\subsection{Weak vs strong}
+\subsection{LUSI}
+\subsection{Predicate selection}
 
-\section{Statistical invariants and their use}
 
-\section{Learning with invariants}
+\section{Statistical invariants}
 
-\subsection{Invariants selection}
+An statistical invariant is a specific realization of a predicate with statistical meaning.
+
+
+
+Before talking about the LUSI paradigm we need to define the concept of statistical invariants.
+An \emph{invariant} is a mathematical property that remains unchanged after a transformation
+or operation. Hence, a \emph{statistical invariant} is a statistical property that remains
+unchanged after a transformation or operation.
+
+There are many different statistical invariants, each one of them providing different information
+about the data. Consider a binary classification problem in which we have elements from a
+positive and a negative class labeled as 1 and 0, respectively. We could use some statistical
+invariants of the training data in order to reduce the number of possible functions during
+the training process. For instance, we could use the zeroth moment invariant, which tells the
+proportion of elements in each class. This way, the model has to both correctly label each sample
+and keep the proportion of elements of each class. Also, we could use a first moment invariant,
+which would tell us the mean of each class.
+
+
+\subsection{Zero-order invariants}
+
+\subsection{First-order invariants}
+
+
+
 
 \subsection{Solving the learning problem}
 
 \section{Main results}
+
+La seleccion del invariante es problem dependent y es un "black-art".
