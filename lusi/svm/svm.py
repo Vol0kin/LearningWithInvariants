@@ -1,5 +1,5 @@
 import numpy as np
-from lusi.invariants import *
+from lusi import invariants
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -61,7 +61,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
     def _generate_random_projections(self) -> npt.NDArray[np.float64]:
         random_projections = np.array([
-            random_projection(self.X)
+            invariants.random_projection(self.X)
             for _ in range(self.num_gen_invariants)
         ])
 
@@ -73,11 +73,21 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
     def _generate_random_hyperplanes(self) -> npt.NDArray[np.float64]:
         random_hyperplanes = np.array([
-            random_hyperplane(self.X)
+            invariants.random_hyperplane(self.X)
             for _ in range(self.num_gen_invariants)
         ])
 
         return random_hyperplanes
+
+
+    def _generate_vapnik_invariants(self) -> npt.NDArray[np.float64]:
+        vapnik_invariants = [invariants.positive_class(self.y)]
+        vapnik_invariants.extend([
+            invariants.mean_in_dimension(self.X, dim)
+            for dim in range(self.X.shape[1])
+        ])
+
+        return vapnik_invariants
 
 
     def _simple_inference(
@@ -115,8 +125,10 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
     def _invariants_inference(self, K: npt.NDArray[np.float64]):
         if self.invariant_type == InvariantTypes.PROJECTION:
             invariant_generation_func = self._generate_random_projections
-        else:
+        elif self.invariant_type == InvariantTypes.HYPERPLANE:
             invariant_generation_func = self._generate_random_hyperplanes
+        else:
+            invariant_generation_func = self._generate_vapnik_invariants
         
         if self.verbose:
             print(f'Using {self.invariant_type} invariant')
