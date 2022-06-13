@@ -148,9 +148,9 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         A_c = np.dot(VK_perturbed_inv, np.dot(V, ones))
 
         n_tries = 0
-        invariants = []
+        self.invariants = []
 
-        while n_tries < self.tolerance and len(invariants) < self.num_invariants:
+        while n_tries < self.tolerance and len(self.invariants) < self.num_invariants:
             n_tries += 1
 
             # Generate random projection invariants
@@ -162,50 +162,48 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
             for pred in predicates:
                 num = np.dot(pred, np.dot(K, A)) + c * np.dot(pred, ones) - np.dot(pred, self.y)
                 den = np.dot(self.y, pred)
-                T = np.abs(num) / den if den > 0 else 0
+                T = np.abs(num) / den if den > 0.0 else 0.0
                 T_values.append(T)
             
             T_max = np.max(T_values)
 
             if T_max > self.delta:
                 if self.verbose:
-                    print(f'Selected invariant after {n_tries} tries with T={T_max}')
-                    # print(T_values)
+                    print(f'Selected invariant {np.argmax(T_values)} after {n_tries} tries with T={T_max}')
 
                 # Update control variables
                 n_tries = 0
 
-                invariants.append(predicates[np.argmax(T_values)])
-                invariants_arr = np.array(invariants)
+                self.invariants.append(predicates[np.argmax(T_values)])
 
-                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in invariants_arr])
+                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in self.invariants])
 
                 # Create system of equations
                 c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
 
                 mu_1 = np.array([
                     np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi)
-                    for phi in invariants_arr
+                    for phi in self.invariants
                 ])
 
                 rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
 
                 c_2 = np.array([
                     np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi)
-                    for phi in invariants
+                    for phi in self.invariants
                 ])
 
                 mu_2 = np.array([
                     np.array([
-                        np.dot(A_s[s], np.dot(K, invariants_arr[k]))
-                        for s in range(len(invariants))
+                        np.dot(A_s[s], np.dot(K, self.invariants[k]))
+                        for s in range(len(self.invariants))
                     ])
-                    for k in range(len(invariants))
+                    for k in range(len(self.invariants))
                 ])
 
                 rh_2 = np.array([
                     np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi)
-                    for phi in invariants_arr
+                    for phi in self.invariants
                 ])
 
                 a_1 = np.concatenate(([c_1], mu_1))
@@ -221,7 +219,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
                 sum_mu_As = np.sum(
                     np.array([
                         mu[s] * A_s[s]
-                        for s in range(len(invariants))
+                        for s in range(len(self.invariants))
                     ]), axis=0
                 )
                 A = A_v - c * A_c - sum_mu_As
@@ -231,7 +229,9 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
         if self.verbose:
             print('Finished training')
-            print(f'Num. invariants: {len(invariants)}\tNum. tries: {n_tries}')
+            print(f'Num. invariants: {len(self.invariants)}\tNum. tries: {n_tries}')
+
+        self.invariants = np.array(self.invariants)
         
         return A, c
 
