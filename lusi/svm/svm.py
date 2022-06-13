@@ -90,6 +90,16 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         return vapnik_invariants
 
 
+    def _generate_all_invariants(self) -> npt.NDArray[np.float64]:
+        random_projections = self._generate_random_projections()
+        random_hyperplanes = self._generate_random_hyperplanes()
+        vapnik_invariants = self._generate_vapnik_invariants()
+
+        all_invariants = np.r_[random_projections, random_hyperplanes, vapnik_invariants]
+
+        return all_invariants
+
+
     def _simple_inference(
         self,
         K: npt.NDArray[np.float64],
@@ -123,12 +133,15 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
 
     def _invariants_inference(self, K: npt.NDArray[np.float64]):
-        if self.invariant_type == InvariantTypes.PROJECTION:
-            invariant_generation_func = self._generate_random_projections
-        elif self.invariant_type == InvariantTypes.HYPERPLANE:
-            invariant_generation_func = self._generate_random_hyperplanes
-        else:
-            invariant_generation_func = self._generate_vapnik_invariants
+        match self.invariant_type:
+            case InvariantTypes.PROJECTION:
+                invariant_generation_func = self._generate_random_projections
+            case InvariantTypes.HYPERPLANE:
+                invariant_generation_func = self._generate_random_hyperplanes
+            case InvariantTypes.VAPNIK:
+                invariant_generation_func = self._generate_vapnik_invariants
+            case InvariantTypes.ALL:
+                invariant_generation_func = self._generate_all_invariants
         
         if self.verbose:
             print(f'Using {self.invariant_type} invariant')
@@ -158,7 +171,7 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
 
             T_values = []
 
-            # Evaluate the random projections
+            # Evaluate the invariants
             for pred in predicates:
                 num = np.dot(pred, np.dot(K, A)) + c * np.dot(pred, ones) - np.dot(pred, self.y)
                 den = np.dot(self.y, pred)
@@ -166,43 +179,54 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
                 T_values.append(T)
             
             T_max = np.max(T_values)
+            T_max_idx = np.argmax(T_values)
 
             if T_max > self.delta:
                 if self.verbose:
-                    print(f'Selected invariant {np.argmax(T_values)} after {n_tries} tries with T={T_max}')
+                    print(f'Selected invariant {T_max_idx} after {n_tries} tries with T={T_max}')
 
                 # Update control variables
                 n_tries = 0
 
-                self.invariants.append(predicates[np.argmax(T_values)])
+                if self.invariant_type != InvariantTypes.ALL:
+                    invariant_type = self.invariant_type
+                else:
+                    if T_max_idx < self.num_gen_invariants:
+                        invariant_type = InvariantTypes.PROJECTION
+                    elif T_max_idx <= self.num_gen_invariants * 2:
+                        invariant_type = InvariantTypes.HYPERPLANE
+                    else:
+                        invariant_type = InvariantTypes.VAPNIK
 
-                A_s = np.array([np.dot(VK_perturbed_inv, phi) for phi in self.invariants])
+                self.invariants.append({'invariant': predicates[T_max_idx], 'type': invariant_type, 'T_value': T_max})
+
+                A_s = np.array([np.dot(VK_perturbed_inv, phi['invariant']) for phi in self.invariants])
 
                 # Create system of equations
                 c_1 = np.dot(ones, np.dot(VK, A_c)) - np.dot(ones, np.dot(V, ones))
 
                 mu_1 = np.array([
-                    np.dot(ones, np.dot(VK, phi)) - np.dot(ones, phi)
+                    np.dot(ones, np.dot(VK, phi['invariant'])) - np.dot(ones, phi['invariant'])
                     for phi in self.invariants
                 ])
 
                 rh_1 = np.dot(ones, np.dot(VK, A_v)) - np.dot(ones, np.dot(V, self.y))
 
                 c_2 = np.array([
-                    np.dot(A_c, np.dot(K, phi)) - np.dot(ones, phi)
+                    np.dot(A_c, np.dot(K, phi['invariant'])) - np.dot(ones, phi['invariant'])
                     for phi in self.invariants
                 ])
 
                 mu_2 = np.array([
                     np.array([
-                        np.dot(A_s[s], np.dot(K, self.invariants[k]))
+                        np.dot(A_s[s], np.dot(K, self.invariants[k]['invariant']))
                         for s in range(len(self.invariants))
                     ])
                     for k in range(len(self.invariants))
                 ])
 
                 rh_2 = np.array([
-                    np.dot(A_v, np.dot(K, phi)) - np.dot(self.y, phi)
+                    np.dot(A_v, np.dot(K, phi['invariant'])) - np.dot(self.y, phi['invariant'])
                     for phi in self.invariants
                 ])
 
@@ -230,8 +254,6 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         if self.verbose:
             print('Finished training')
             print(f'Num. invariants: {len(self.invariants)}\tNum. tries: {n_tries}')
-
-        self.invariants = np.array(self.invariants)
         
         return A, c
 
