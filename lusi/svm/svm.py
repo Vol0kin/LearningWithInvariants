@@ -265,9 +265,11 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         return self
 
 
-    def predict_proba(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    def predict_proba(self, X: npt.NDArray[np.float64], clip=True) -> npt.NDArray[np.float64]:
         probabilites = np.dot(self.A, rbf_kernel(self.X, X, gamma=self.gamma)) + self.c
-        probabilites = np.clip(probabilites, 0, 1)
+
+        if clip:
+            probabilites = np.clip(probabilites, 0, 1)
 
         return probabilites
 
@@ -281,31 +283,3 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         prediction = np.where(probabilites < 0.5, 0, 1)
 
         return prediction
-    
-
-    def _decision_function(self, Z: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        preds = []
-
-        for z in Z:
-            preds.append(np.dot(self.A, self.kernel_func(self.X,[z])) + self.c)
-
-        return np.array(preds).flatten()
-
-
-    def plot_decision_boundary(self, title=''):
-        h = .02
-        x_min, x_max = self.X[:, 0].min() - .2, self.X[:, 0].max() + .2
-        y_min, y_max = self.X[:, 1].min() - .2, self.X[:, 1].max() + .2
-        xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-        viz=np.c_[xx.ravel(),yy.ravel()]
-        Z = self._decision_function(viz)
-        Z = Z.reshape(xx.shape)
-        cm = plt.cm.RdBu
-        cm_bright = ListedColormap(['#FF0000', '#0000FF'])
-        plt.figure(figsize=(5,5))
-        plt.contourf(xx, yy, Z, levels=np.linspace(-1.3,2.3,13), cmap=cm, alpha=.8)
-        plt.contour(xx, yy, Z, levels=[0.5], linestyles='dashed')
-        plt.scatter(self.X[:,0], self.X[:,1], c=self.y, cmap=cm_bright, edgecolors='k')
-        plt.tight_layout()
-        plt.title(title)
-        plt.show()
