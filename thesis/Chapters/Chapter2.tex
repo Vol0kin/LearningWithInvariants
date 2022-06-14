@@ -1,5 +1,10 @@
 % Chapter Template
 
+\newcommand{\Tau}{\mathcal{T}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\innerprod}[1]{\left< #1 \right>}
+\newcommand{\set}[1]{\lbrace #1 \rbrace}
+
 \chapter{Learning using statistical invariants} % Main chapter title
 \label{Chapter2}
 
@@ -12,13 +17,85 @@ and an overview of the most relevant aspects of the original paper that presente
 which was proposed by \cite{Vapnik2019}. For further information and more details, please
 refer to the original paper.
 
-%----------------------------------------------------------------------------------------
-%	SECTION 1
-%----------------------------------------------------------------------------------------
 \section{Weak convergence and the LUSI paradigm}
-\subsection{Weak vs strong}
-\subsection{LUSI}
+
+Supervised machine learning algorithms try to find the best estimate of some conditional probability
+function $P(y = 1 | x)$, i.e., given a data point $x$, we want to compute the probability that this
+point belongs to a particular class.
+
+Classical methods do this by using the strong mode of convergence in the Hilbert space. However,
+in the LUSI paradigm this estimation is obtained using the weak mode of convergence. Hence, it is
+important to understand the difference between this two modes of convergence and what role
+the weak mode of convergence plays in the LUSI paradigm.
+
+\subsection{Strong and weak modes of convergence}
+
+In a Hilbert space, the relationships between two functions $f_1(x)$ and $f_2(x)$ have two
+numerical properties:
+
+\begin{enumerate}
+    \item The distance between functions
+    
+    \[
+        \rho (f_1, f_2) = \norm{f_1(x) - f_2(x)}
+    \]
+    
+    that is defined by the metric of the $L_2$ space and
+    
+    \item The inner product between functions
+    
+    \[
+        R(f_1, f_2) = \innerprod{f_1(x), f_2(x)}
+    \]
+    
+    that has to satisfy the corresponding requirements.
+\end{enumerate}
+
+These two properties imply two different modes of convergence: a strong one and a weak one. Classical
+learning paradigms rely on the strong convergence mode (convergence in metrics), trying to find a
+sequence of functions $\set{P_l(y=1 | x)}$ such that
+
+\[
+    \lim_{l \to \infty} \norm{P_l(y=1 | x) - P(y=1 | x)} = 0\quad \forall x
+\]
+
+The weak mode of convergence (convergence in inner products) is given by
+
+\[
+    \lim_{l \to \infty} \innerprod{P_l(y=1 | x) - P(y=1 | x), \psi(x)} = 0\quad \forall \psi(x) \in L_2
+\]
+
+Note that this mode of convergence has to take place for \emph{all} functions in the Hilbert space $L_2$.
+
+It is known that the strong mode of convergence implies the weak one, although generally speaking, the
+reverse is not true.
+
+\subsection{The LUSI paradigm}
+
+Opposite to the classical learning paradigms, LUSI is based on the weak mode of convergence. It replaces
+the infinite set of functions with a set of functions $\mathcal{P} = \set{\psi_1(x), \dots, \psi_m(x)}$
+called predicates, which describe some important properties of the desired conditional probability function and
+restrict the scope of weak convergence only to the set of functions $\mathcal{P}$. These properties are
+called invariants, and can be expressed as the following equalities:
+
+\[
+    \int \psi_s P(y=1 | x)dP(x) = \int \psi_s P(y=1, x) = a_s,\quad s = 1, \dots, m
+\]
+
+where $a_s$ is the expected value of $\psi_s(x)$ with respect to measure $P(y=1, x)$.
+
+
+\begin{equation}
+    \frac{1}{l} \sum_{i=1}^l \psi_s(x_i)P_l(y=1 | x_i) \approx a_s \approx \frac{1}{l} \sum_{i=1}^l y_i \psi_s(x_i),\quad
+    s = 1, \dots, m
+\end{equation}
+
 \subsection{Predicate selection}
+
+\begin{equation}
+    \label{eq:predicate_selection}
+    \Tau = \frac{\left| \sum_{i=1}^l \psi_{m+1}(x_i) P^m_l(y = 1 | x_i) - \sum_{i=1}^l y_i \psi_{m+1}(x_i) \right|}{\sum_{i=1}^l y_i \psi_{m+1}(x_i)}
+\end{equation}
 
 
 \section{Statistical invariants}
