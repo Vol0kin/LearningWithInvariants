@@ -82,20 +82,38 @@ called invariants, and can be expressed as the following equalities:
     \int \psi_s P(y=1 | x)dP(x) = \int \psi_s P(y=1, x) = a_s,\quad s = 1, \dots, m
 \]
 
-where $a_s$ is the expected value of $\psi_s(x)$ with respect to measure $P(y=1, x)$.
-
+where $a_s$ is the expected value of the predicate $\psi_s(x)$ with respect to measure
+$P(y=1, x)$. These values are unknown but can be estimated using the training data
+$\set{(x_i, y_i),\ i = 1, \dots, l}$. Therefore, the previous expression can be rewritten
+as follows:
 
 \begin{equation}
+    \label{eq:invariant_approximation}
     \frac{1}{l} \sum_{i=1}^l \psi_s(x_i)P_l(y=1 | x_i) \approx a_s \approx \frac{1}{l} \sum_{i=1}^l y_i \psi_s(x_i),\quad
     s = 1, \dots, m
 \end{equation}
 
+Simply put, the general idea of the LUSI paradigm is to find an approximation $P_l(y=1|x)$ of the
+real conditional probability function in the subset of functions that preserve the invariants
+associated to the set of predicates $\mathcal{P}$, reducing effectively the set of candidate functions
+to those that satisfy \eqref{eq:invariant_approximation}.
+
 \subsection{Predicate selection}
+
+In order to find this approximation of the conditional probability function, there must exist
+some kind of mechanism that allows us to determine which invariants should be used. Luckily,
+the authors propose a very simple way to sequentially selecting invariants. Given an approximation
+$P_l^m(y=1|x)$ using $m$ invariants and a new predicate $\psi_{m+1}$ which we would to know whether
+it should be considered or not. We can compute the following value before adding it:
 
 \begin{equation}
     \label{eq:predicate_selection}
     \Tau = \frac{\left| \sum_{i=1}^l \psi_{m+1}(x_i) P^m_l(y = 1 | x_i) - \sum_{i=1}^l y_i \psi_{m+1}(x_i) \right|}{\sum_{i=1}^l y_i \psi_{m+1}(x_i)}
 \end{equation}
+
+If $\Tau \geq \delta$ for some small threshold $\delta$, the new invariant defined by predicate $\psi_{m+1}$
+is considered. Otherwise, the expression \eqref{eq:invariant_approximation} is treated as an equality
+and the invariant is not considered in the approximation.
 
 
 \section{Statistical invariants}
