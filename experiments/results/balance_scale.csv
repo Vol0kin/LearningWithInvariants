@@ -19,7 +19,7 @@ train_size,model,accuracy_1,accuracy_2,accuracy_3
 0.5,Vapnik,0.912,0.912,0.912
 0.5,Projections,0.912,0.912,0.912
 0.5,Hyperplanes,0.872,0.88,0.864
-0.1,Baseline,0.888,0.888,0.888
+0.1,Baseline,0.896,0.896,0.896
 0.1,Vapnik,0.888,0.888,0.888
 0.1,Projections,0.856,0.664,0.888
 0.1,Hyperplanes,0.824,0.832,0.528
