@@ -118,33 +118,53 @@ and the invariant is not considered in the approximation.
 
 \section{Statistical invariants}
 
-An statistical invariant is a specific realization of a predicate with statistical meaning.
+A \emph{statistical invariant} is a specific realization of a predicate with statistical meaning.
+This means that it captures some sort of statistical information of the data that has to be
+conserved when selecting the best approximation of the conditional probability function.
+
+There are different types of statistical invariants, each one of them
+providing different information about the data. In this case, the authors have considered
+two in particular: the zeroth order and first order moments of the conditional probability
+function $P(y=1|x)$. We will briefly discuss each one of them and see what kind of information
+they provide.
+
+\subsection{Zeroth order invariant}
+
+Suppose that we are given a binary classification problem, in which the positive instances
+are labeled as 1 and the negative ones as 0. The zeroth order invariant would give us information
+about the ratio of elements of the positive class. It is defined as follows:
+
+\[
+    \psi_0(x) = 1
+\]
+
+The logic behind it is the following: the predicate is applied to each single sample in the dataset,
+which will yield the vector $(1, \dots, 1) \in \mathbb{R}^l $, where $l$ is the number of samples. Taking into account
+expression \eqref{eq:invariant_approximation}, we can see that each element of this vector is multiplied
+by the predicted labels (left side) and the true labels (right side). These values are summed and then divided
+by $l$, which gives us the proportion of positive predicted elements on the left side and the proportion
+of true positive elements on the right side. Notice that the invariant is only taken into account for those
+elements whose predicted or true label is positive. Thus, the negative samples are not considered.
+
+\subsection{First order invariant}
+
+Suppose the same case scenario as in the previous subsection. If we apply the first order invariant to
+a dataset, we would get the mean or centroid of the positive class. Its mathematical expression is:
+
+\[
+    \psi_1(x) = x
+\]
+
+Same as before, when this predicate is applied to the dataset it will generate the vector
+$(x_1, \dots, x_l) \in \mathbb{R}^l$. Following expression \eqref{eq:invariant_approximation} again,
+only the positive true or predicted elements will be considered. Therefore, their values will be summed and
+then averaged, yielding indeed the centroid of the positive class (both for the predicted and true labels).
+
+\section{Solving the learning problem}
 
 
 
-Before talking about the LUSI paradigm we need to define the concept of statistical invariants.
-An \emph{invariant} is a mathematical property that remains unchanged after a transformation
-or operation. Hence, a \emph{statistical invariant} is a statistical property that remains
-unchanged after a transformation or operation.
-
-There are many different statistical invariants, each one of them providing different information
-about the data. Consider a binary classification problem in which we have elements from a
-positive and a negative class labeled as 1 and 0, respectively. We could use some statistical
-invariants of the training data in order to reduce the number of possible functions during
-the training process. For instance, we could use the zeroth moment invariant, which tells the
-proportion of elements in each class. This way, the model has to both correctly label each sample
-and keep the proportion of elements of each class. Also, we could use a first moment invariant,
-which would tell us the mean of each class.
-
-
-\subsection{Zero-order invariants}
-
-\subsection{First-order invariants}
-
-
-
-
-\subsection{Solving the learning problem}
+\section{Overview of the LUSI algorithm}
 
 \section{Main results}
 
