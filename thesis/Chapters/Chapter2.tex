@@ -161,11 +161,110 @@ only the positive true or predicted elements will be considered. Therefore, thei
 then averaged, yielding indeed the centroid of the positive class (both for the predicted and true labels).
 
 \section{Solving the learning problem}
+\label{sect:solvin_learning_problem}
 
+The authors show that in a specific type of Hilbert space called Reproducing Kernel Hilbert Space (RKHS)
+the estimate of the conditional probability function can be computed as
 
+\[
+    f(x) = A^T \mathcal{K}(x) + c
+\]
+
+where $A \in \mathbb{R}^l$ is a vector of coefficients, $\mathcal{K}(x) = (K(x_1, x), \dots, K(x_l, x))^T$
+is a vector of functions determined by the kernel associated to the RKHS\footnote{In this case, the authors have
+considered the Gaussian Kernel, which is defined as
+\[
+    K(x, x') = \exp \lbrace -\delta \norm{x - x'}^2 \rbrace,\; \delta > 0
+\]
+}
+and evaluated on the training data, and $c \in \mathbb{R}$ is the bias term.
+
+Additionally, let $Y = (y_1, \dots, y_l)$  be the labels of the training set,  $K \in \mathbb{R}^{l \times l}$
+the matrix with elements $K(x_i, x_j),\; i, j = 1, \dots, l$, $\Phi_s = (\psi_s(x_1), \dots, \psi_s(x_l))^T$
+the vector obtained from evaluating the $l$ points of the sample using predicate $\psi_s$,
+$1_l = (1, \dots, 1) \in \mathbb{R}^l$ a vector of ones and $V \in \mathbb{R}^{l \times l}$ a matrix called
+the $V$-matrix, proposed by \cite{Vapnik2015}, which captures some geometric properties of the data\footnote{The
+most simple case considers that the $V$-matrix is equivalent to the identity matrix. Also, the authors found
+that using the $V$-matrix over the identity matrix didn't improve the results that much, but it was rather the
+use of invariants that made the difference. For the sake of consistency, we are going to keep the $V$-matrix in
+the expressions as this is how they are supposed to be written, although bear in mind that it can be substituted with
+the identity matrix.}.
+
+With all of this information, we can formulate and solve a minimization problem subject to the constraints
+\eqref{eq:predicate_selection} which has a closed-form solution. Using its Lagrangian, we can obtain that the
+coefficients $A$ are given by:
+
+\[
+    A = (A_V - cA_c) - \left( \sum_{s=1}^m \mu_s A_s \right)
+\]
+
+where
+
+\begin{equation*}
+    \begin{gathered}
+        A_V = (VK + \gamma I)^{-1} VY \\
+        A_c = (VK + \gamma I)^{-1} V1_l \\
+        A_s = (VK + \gamma I)^{-1} \Phi_s,\quad s = 1, \dots, n 
+    \end{gathered}
+\end{equation*}
+
+In this case, $\gamma$ controls the amount of regularization applied so that the resulting matrix is not singular.
+
+The values of $c$ and the $m$ coefficients $\mu_s$ can be obtained solving the following system of equations:
+
+\begin{equation*}
+    \begin{gathered}
+        c [1_l^T VKA_c - 1_l^T V 1_l] + \sum_{s=1}^m \mu_s [1_l^T VKA_s - 1_l^T \Phi_s] = [1_l^T VKA_V - 1_l^T V Y] \\
+        c [A_c^TK\Phi_k - 1_l^T\Phi_k] + \sum_{s=1}^m \mu_s A_s^T K \Phi_k = [A_V^T K \Phi_k - Y^T \Phi_k],\quad k=1, \dots, m
+    \end{gathered}
+\end{equation*}
+
+This algorithm, which uses $m$ invariants, is called vSVM\&$\text{I}_m$ if the $V$-matrix is used
+or SVM\&$\text{I}_m$ in case it is not.
 
 \section{Overview of the LUSI algorithm}
 
+Following the mathematical formulations from the previous sections, let us now present an overview of
+the LUSI algorithm.
+
+Consider the following learning method given a training sample $(x_i, y_i),\; i=1, \dots, l$ and
+$\psi_k(x),\; k=1, \dots, m$ predicates:
+
+
+
+\begin{enumerate}[label=\textbf{Step \arabic*:}]
+    \item Construct SVM or vSVM estimate of conditional probability as described in section
+    \ref{sect:solvin_learning_problem}, without considering the predicates.
+    \item Find the maximal disagreement value $\Tau_s$ as defined in \eqref{eq:predicate_selection}
+    for vectors
+    \[
+        \Phi_k = (\psi_k(x_1), \dots, \psi_k(x_l))^T,\quad k=1, \dots, m
+    \]
+    \item If $\Tau_s > \delta$, add the invariant associated to the predicate $\psi_s$; otherwise stop.
+    \item Find a new approximation of the conditional probability function and go back to \textbf{Step 2};
+    otherwise stop.
+\end{enumerate}
+
 \section{Main results}
 
-La seleccion del invariante es problem dependent y es un "black-art".
+
+According to the original work, LUSI yields quiet good results overall, reducing the error and thus improving
+the accuracy of the models that use it compared to models that do not use statistical invariants. Moreover,
+the authors state that it can reduce the number of necessary training examples to obtain a good approximation
+of the conditional probability function. Therefore, this method could be very useful in cases in which the
+amount of available training data is small.
+
+However, this new learning paradigm presents some important flaws:
+
+\begin{enumerate}
+    \item The selected invariants are problem dependent, which means that it is hard to have general invariants
+    that can both be applied to multiple problems without requiring any kind of previous knowledge
+    and yield good results.
+    \item Often, the invariant selection is a ``black-art'' due to the fact that they can either be
+    very esoteric or require a lot of knowledge about the specific problem which might be hard
+    to obtain. Hence, some craftsmanship is required when selecting the invariants that are going
+    to be used.
+\end{enumerate}
+
+Thus, even though the use of invariants can improve the obtained results, they also introduce some additional
+complexity to the task because they require extra knowledge that may not be accessible.
