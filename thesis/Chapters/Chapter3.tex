@@ -1,5 +1,7 @@
 % Chapter Template
 
+\newcommand{\reals}[1]{\mathbb{R}^{#1}}
+
 \chapter{Proposals} % Main chapter title
 \label{Chapter3}
 
@@ -28,6 +30,38 @@ to use, making it just another hyperparameter of a machine learning model. In th
 an invariant based on random projections as well as another one based on random hyperplanes.
 
 \subsection{Random projections}
+
+Random projections have been frequently used in the machine learning field to perform dimensionality reduction
+in a faster and computationally less expensive way than other techniques (i.e., PCA) as studied in 
+\cite{Dasgupta2000} and \cite{BinghamManila2001}.
+
+In our case, the random projection invariant offers a glimpse of the data from a different viewpoint
+and compresses the data into a single dimension as if it was viewed from that particular point.
+Intuitively, this can be observed in figure \ref{fig:random_projections_example}.
+
+More formally speaking, consider a data point $x \in \reals{d}$ and a projection vector
+$p \sim \mathcal{N}(\mu, \Sigma)$, where the multivariate normal distribution has mean $\mu \in \reals{d}$
+and covariance matrix $\Sigma \in \reals{d \times d}$. We can define the random projection invariant as follows:
+
+\begin{equation}
+    \label{eq:random_projection_invariant}
+    \psi_{r.p.}(x) = x p
+\end{equation}
+
+As we can see in expression \eqref{eq:random_projection_invariant}, we are computing the dot product between
+the data point and the projection vector. When this invariant is used in expression \ref{eq:invariant_approximation}
+it will try to preserve the centroid of the positive class in the new projected space. Hence, it is a variation
+of the first order invariant. When using multiple random projections as invariants, we expect that the centroid
+of the positive class is preserved across different views of the data.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{thesis/Figures/random_projections_example}
+    \caption{Example of a dataset and two random projections of it. In the first projection, we can see
+    that the points from the red and blue classes are almost totally overlapped, whereas in the second projection
+    they are completely separable.}
+    \label{fig:random_projections_example}
+\end{figure}
 
 \subsection{Random hyperplanes}
 
