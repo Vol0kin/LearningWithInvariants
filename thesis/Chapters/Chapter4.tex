@@ -1,24 +1,58 @@
-% Chapter Template
-
-\chapter{Experimentation and results} % Main chapter title
+\chapter{Experimentation and results}
 \label{Chapter4}
 
-\label{ChapterX} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+After having explained the necessary theoretical background and presented the proposals
+of this work, it is time that we put them into action to see how they perform. First, we are going
+to test our proposals on some toy datasets in order to better understand them. After that, we are going
+to try the proposed invariants as well as the multiclass extension with ECOC on real data to see how
+well they perform when comparing them to the original invariants proposed in \cite{Vapnik2019}.
 
 \section{Experimenting with toy problems}
 
-Comparar invariantes de Vapnik con los nuevos
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{thesis/Figures/toy_datasets.png}
+    \caption{Toy datasets used in the experimentation.}
+    \label{fig:toy_datasets}
+\end{figure}
 
-Datasets
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{thesis/Figures/circles_decision_boundaries.png}
+    \caption{Caption}
+    \label{fig:circles_decision_boundary}
+\end{figure}
 
-- Moons
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{thesis/Figures/moons_decision_boundaries.png}
+    \caption{Caption}
+    \label{fig:moons_decision_boundary}
+\end{figure}
 
-- Cluster points
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{thesis/Figures/num_selected_invariants.png}
+    \caption{Caption}
+    \label{fig:toys_small_num_selected_invariants}
+\end{figure}
 
-- Circles
+\begin{figure}
+    \centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/mean_num_selected_invariants.png}
+        \caption{Caption}
+        \label{fig:toys_mean_num_selected}
+    \end{minipage}%
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/mean_first_selected.png}
+        \caption{Caption}
+        \label{fig:toys_mean_first_selected}
+    \end{minipage}
+\end{figure}
 
-
-Cosas que se podrían probar: Influencia de los hiperparámetros
 
 
 \section{Experimentation on real data}
