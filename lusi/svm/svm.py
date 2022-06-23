@@ -287,11 +287,10 @@ class SVMRandomInvariants(BaseEstimator, ClassifierMixin):
         return self
 
 
-    def predict_proba(self, X: npt.NDArray[np.float64], clip=True) -> npt.NDArray[np.float64]:
+    def predict_proba(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         probabilites = np.dot(self.A, rbf_kernel(self.X, X, gamma=self.gamma)) + self.c
 
-        if clip:
-            probabilites = np.clip(probabilites, 0, 1)
+        probabilites = np.clip(probabilites, 0, 1)
 
         return probabilites
 

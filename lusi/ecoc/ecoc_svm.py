@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.typing as npt
+from scipy.spatial import distance
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 
@@ -76,3 +77,14 @@ class SVMRandomInvariantsECOC(BaseEstimator, ClassifierMixin):
         prediction = generate_decoding(self.encoding, probabilites)
 
         return prediction
+
+
+    def predict_proba(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        probabilites = np.column_stack([
+            model.predict_proba(X)
+            for model in self.models
+        ])
+
+        distances = distance.cdist([self.encoding[0]], probabilites, metric='euclidean')
+
+        return distances[0]
