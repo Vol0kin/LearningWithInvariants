@@ -20,8 +20,8 @@ refer to the original paper.
 \section{Weak convergence and the LUSI paradigm}
 
 Supervised machine learning algorithms try to find the best estimate of some conditional probability
-function $P(y = 1 | x)$, i.e., given a data point $x$, we want to compute the probability that this
-point belongs to a particular class.
+function $P(y | x)$, i.e., given a data point $x$, we want to compute the probability that this
+point belongs to a particular class $y$.
 
 Classical methods do this by using the strong mode of convergence in the Hilbert space. However,
 in the LUSI paradigm this estimation is obtained using the weak mode of convergence. Hence, it is
@@ -53,7 +53,7 @@ numerical properties:
 
 These two properties imply two different modes of convergence: a strong one and a weak one. Classical
 learning paradigms rely on the strong convergence mode (convergence in metrics), trying to find a
-sequence of functions $\set{P_l(y=1 | x)}$ such that
+sequence of functions $\set{P_l(y=1 | x)}$\footnote{We focus here in the binary problem setting, i.e. $y\in \{0,1\}$. Thus, $P_l(y=1 | x)$ fully specifies the output probability distribution.} such that
 
 \[
     \lim_{l \to \infty} \norm{P_l(y=1 | x) - P(y=1 | x)} = 0\quad \forall x
@@ -79,7 +79,7 @@ restrict the scope of weak convergence only to the set of functions $\mathcal{P}
 called invariants, and can be expressed as the following equalities:
 
 \[
-    \int \psi_s P(y=1 | x)dP(x) = \int \psi_s P(y=1, x) = a_s,\quad s = 1, \dots, m
+    \int \psi_s P(y=1 | x)dP(x) = \int \psi_s dP(y=1, x) = a_s,\quad s = 1, \dots, m
 \]
 
 where $a_s$ is the expected value of the predicate $\psi_s(x)$ with respect to measure
