@@ -9,7 +9,9 @@ As we have already seen in Chapter \ref{Chapter2}, LUSI introduces a new data-dr
 paradigm which aims to find better approximations of the conditional probability function using
 statistical invariants. However, these invariants are often problem dependent and choosing the
 appropriate ones is not an easy task, as there are many possible ones and some of them are not
-straightforward to come up with.
+straightforward to come up with. Also, the paradigm does not consider statistical information
+of the negative class in binary problems and has to be extended so that it can be applied to
+multiclass problems.
 
 Thus, our main goal with this work is to create a series of new invariants which we expect to be of
 general use, as well as automatizing the selection process of the invariants that should be considered
@@ -106,10 +108,50 @@ hyperplane), instead of trying to preserve it in the whole space.
     \label{fig:random_hyperplanes_example}
 \end{figure}
 
+\subsection{The LUSI algorithm with random invariants}
+
+Because we are introducing some random behavior in the LUSI algorithm, the previously defined algorithm
+has to be adapted so that it can operate with these new random invariants, especially the invariants selection process.
+
+\begin{algorithm}
+    \caption{Modified version of the LUSI algorithm considering random invariants}
+    \label{alg:lusi_random_invariants}
+    \begin{algorithmic}[1]
+        \Function{RandomInvariantsLUSI}{$N$, $M$, $tolerance$, $\delta$}
+            \State Compute initial values of $A$ and $c$ without considering invariants
+            \State $invariants \gets$ EmptyArray()
+            \State $tries \gets 0$
+            \While{length$(invariants) < N$ \textbf{and} $tries < tolerance$}
+                \State $random\_invariants \gets$ GenerateRandomInvariants$(M)$
+                \State Compute maximal disagreement value $\Tau_s$ of the invariants using \ref{eq:predicate_selection}
+                \If{$\Tau_s > \delta$}
+                    \State Add invariant $s$ to $invariants$
+                    \State $tries \gets 0$
+                    \State Compute new approximations of $A$ and $c$ with equations from \ref{sect:solvin_learning_problem}
+                \Else
+                    \State $tries \gets tries + 1$
+                \EndIf
+            \EndWhile
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+Suppose that we want to train a classifier using up to $N$ random invariants. At each step, we can generate
+$M$ random invariants of the same type (random projections or hyperplanes) and evaluate them
+using expression \eqref{eq:predicate_selection}, selecting the one with the maximal value $\Tau_s$. If this value
+is greater than the value of $\delta$, then the invariant is selected. Otherwise, we would repeat
+the previous process. Note that due to the stochasticity of the invariants generation process, we could end up
+in an infinite-loop if none of them have a greater value than $\delta$. Thus, we introduce a parameter
+$tolerance$ to control the number of times that we want this process to be repeated. Algorithm \ref{alg:lusi_random_invariants} offers an overview of this modified version of the LUSI
+algorithm.
+
 \section{Extending the LUSI paradigm to multiclass problems}
 
 As we have seen up until now, this learning paradigm can be easily applied to binary classification problems
-and solve them. Nevertheless, note that the invariants are defined specifically for just one of the classes. This ignores the invariant information that could be gathered by considering the other class. Moreover, in the most general setting of multiclass classification, the algorithm has to be extended. So, instead of restraining ourselves to a particular kind of problems, it seems reasonable trying to extend
+and solve them. Nevertheless, note that the invariants are defined specifically for just one of the classes.
+This ignores the invariant information that could be gathered by considering the other class. Moreover, in
+the most general setting of multiclass classification, the algorithm has to be extended. So, instead of
+restraining ourselves to a particular kind of problems, it seems reasonable trying to extend
 LUSI to multiclass problems so that we have a wider application scope.
 
 One framework that can be used to easily deal with this kind of problems is Error Correcting Output Codes (ECOC),

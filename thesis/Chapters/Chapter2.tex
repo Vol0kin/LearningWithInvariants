@@ -243,7 +243,7 @@ $\psi_k(x),\; k=1, \dots, m$ predicates:
     otherwise stop.
 \end{enumerate}
 
-\section{Main results}
+\section{Main results and limitations}
 
 According to the original work, LUSI yields quiet good results overall, reducing the error and thus improving
 the accuracy of the models that use it compared to models that do not use statistical invariants. Moreover,
@@ -261,6 +261,11 @@ However, this new learning paradigm presents some important flaws:
     very esoteric or require a lot of knowledge about the specific problem which might be hard
     to obtain. Hence, some craftsmanship is required when selecting the invariants that are going
     to be used.
+    \item Considering expressions \eqref{eq:invariant_approximation} and \eqref{eq:predicate_selection}, we
+    can clearly see that the invariants can only consider the statistical information of
+    the positive class. The way that the values are computed make it hinder the application of the invariants
+    to the negative class and to multiclass classification problems since there is no positive class in this kind
+    of scenarios. This a very serious drawback of this method that needs to be further addressed.
 \end{enumerate}
 
 Thus, even though the use of invariants can improve the obtained results, they also introduce some additional
