@@ -109,8 +109,7 @@ hyperplane), instead of trying to preserve it in the whole space.
 \section{Extending the LUSI paradigm to multiclass problems}
 
 As we have seen up until now, this learning paradigm can be easily applied to binary classification problems
-and solve them. However, most of the real world classification problems are not binary but multiclass.
-So, instead of restraining ourselves to a particular kind of problems, it seems reasonable trying to extend
+and solve them. Nevertheless, note that the invariants are defined specifically for just one of the classes. This ignores the invariant information that could be gathered by considering the other class. Moreover, in the most general setting of multiclass classification, the algorithm has to be extended. So, instead of restraining ourselves to a particular kind of problems, it seems reasonable trying to extend
 LUSI to multiclass problems so that we have a wider application scope.
 
 One framework that can be used to easily deal with this kind of problems is Error Correcting Output Codes (ECOC),
