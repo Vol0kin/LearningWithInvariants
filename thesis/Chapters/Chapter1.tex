@@ -69,7 +69,33 @@ model that can be applied to classification problems.
 
 \section{Brief summary of the results}
 
-% TODO: Waiting for final results
+With the completion of this work, we have been able to achieve the following objectives:
+
+\begin{itemize}
+    \item We have proposed new invariants that can be applied to different problems
+    with no prior knowledge required.
+    \item We have extended the LUSI paradigm to work with multiclass problems.
+    \item We have created a small software module containing the extended version of LUSI as
+    a machine learning model. This model has the same interface as a machine learning model
+    from \texttt{scikit-learn}, which makes it fully compatible with the functionality provided
+    by this module.
+\end{itemize}
+
+However, we have also noted that we did not have that much of a success in the following aspects:
+
+\begin{itemize}
+    \item We were not able to automatize the selection process of the most suitable invariants
+    for a problem. Thus, it still remains an open question.
+    \item As we will see in later chapters, the invariants that we have proposed have not achieved
+    the best results. The random projections were able to achieve similar but slightly worse results
+    compared to the original invariants, and the random hyperplanes seem to provide little to no
+    relevant information.
+\end{itemize}
+
+Nevertheless, we have been able to better understand the learning with invariants problem
+and made some contributions on the topic. All of the developed code and experiments can be
+found in this \href{https://github.com/Vol0kin/LUSI}{GitHub repository}.
+
 
 %----------------------------------------------------------------------------------------
 %	SECTION 4: LAYOUT
