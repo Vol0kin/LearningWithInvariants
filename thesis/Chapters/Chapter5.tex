@@ -3,12 +3,59 @@
 \chapter{Conclusions} % Main chapter title
 \label{Chapter5}
 
-\label{ChapterX} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+Summing up, in this work we have studied the application of statistical invariants to the learning
+problem through a new learning paradigm called LUSI. We have seen the theoretical background
+that it is based on as well as the potential benefits that it can bring and its limitations.
+We have seen that the invariants are problem dependent and choosing the most appropriate ones
+is a hard task which requires prior knowledge. Also, the original version of the LUSI algorithm
+can only consider one class at the time, which hinders its application to more complex problems.
 
-%----------------------------------------------------------------------------------------
-%	SECTION 1
-%----------------------------------------------------------------------------------------
+With these limitations in mind, we have proposed two new invariants, which are random projections
+and random hyperplanes. These invariants use random processes in order to keep statistical information
+of the data, are of general use and require no previous knowledge of the problem. Also, we have
+proposed an extension of the original LUSI algorithm using ECOC so that it can be applied to any
+class in both binary and multiclass classification problems.
+
+We have seen that the extended version of LUSI using ECOC has been successfully applied to both
+binary and multiclass classification problems without negatively impacting the final results.
+
+However, after performing some experiments with the new invariants we have seen that the obtained
+results were not as good as expected. The random projections offered similar results to the original
+invariants, although they were slightly worse in general. As far as the random projections go, the
+results that we obtained using them were discouraging, as it was the type of invariant that performed
+the worst in almost all scenarios.
+
+Also, even though it was one of the main goals of this thesis, we were not able to automatize
+the invariants selection process, as we still have to manually choose which invariants need to be
+applied to a given problem. Thus, it still remains an open topic.
+
+In conclusion, we believe that this new version of LUSI using ECOC is an important step in making
+this data-driven paradigm more accessible and easy to apply for the machine learning community.
+Also, the random projections are an interesting proposal that can be applied to multiple problems
+and achieve overall good results, although there are other invariants that might work better.
+Nonetheless, it is an important example of how new invariants can be created.
 
 \section{Future work}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ultricies lacinia euismod. Nam tempus risus in dolor rhoncus in interdum enim tincidunt. Donec vel nunc neque. In condimentum ullamcorper quam non consequat. Fusce sagittis tempor feugiat. Fusce magna erat, molestie eu convallis ut, tempus sed arcu. Quisque molestie, ante a tincidunt ullamcorper, sapien enim dignissim lacus, in semper nibh erat lobortis purus. Integer dapibus ligula ac risus convallis pellentesque.
+Even though we have accomplished some of the goals that we had set at the beginning of this thesis,
+there is still a lot of room for improvement. Moreover, there are some other lines of work we wanted
+to explore but we couldn't because of the time limitations of this project or because they ended
+up being out of scope. Thus, here are some proposals of future work that we believe are of great
+interest:
+
+\begin{itemize}
+    \item The current formulation of the LUSI algorithm as a system of equations is quite cumbersome.
+    We could rewrite this formulation so that an iterative algorithm like SGD can be applied to it.
+    This way, we could enable the application of this data-driven paradigm to different types of
+    machine learning algorithms. We believe that this task is quite difficult and we would need
+    to explore the possible limitations of this new formulation, or whether it can be done at all.
+    \item The original work only proposed invariants up to the first order. It would be interesting
+    to see whether it makes sense to apply higher order invariants to the learning problem and if
+    they can be used to achieve better results.
+    \item Related to the previous points, coming up with invariants that can be applied to text
+    or images is a task that would further enable LUSI to be applied to new domain problems. However,
+    it would first need to be reformulated.
+    \item We believe that the random projections invariant can be improved by constructing an orthogonal
+    space from random vectors and projecting the data in it. This could be done using an orthonormalization
+    process like the Gram-Schmidt process.
+\end{itemize}
