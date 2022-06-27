@@ -146,7 +146,23 @@ headsepline, % Uncomment to get a line under the header
 
 \begin{abstract}
 \addchaptertocentry{\abstractname} % Add the abstract to the table of contents
-The Thesis Abstract is written here (and usually kept to just this page). The page is kept centered vertically so can expand into the blank space above the title too\ldots
+The current machine learning paradigms consider no further information apart from
+the data samples when trying to learn a model that can represent the data and be
+used later on to infer information about new samples. During the training process,
+the current methods try to minimize the error with respect to the original data, thus
+searching the function that best fits the data in an infinite space of functions. However,
+the training data has statistical information that can help reduce the searching 
+space to a region of it, allowing also to find functions that better fit the data. A recently
+proposed data-driven learning paradigm called LUSI tries to take advantage of this information
+by preserving some invariants containing interesting statistical properties of the data.
+Despite offering good results, the invariants are problem dependent, prior knowledge of the
+problem is required when selecting the invariants and it is limited to preserve the information
+of only one class at the time. Hence, in this work we propose and study the use of random projections
+and random hyperplanes as general use invariants. We observe that the random projections offer
+results similar to the original invariants although are a bit limited, whereas the random hyperplanes
+fall quite short compared to the other types of invariants. Also, we successfully extend the LUSI
+paradigm to multiple classes using the Error Correcting Output Codes framework,
+enabling its use in multiclass classification problems.
 \end{abstract}
 
 %----------------------------------------------------------------------------------------
