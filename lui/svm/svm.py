@@ -1,9 +1,6 @@
 import numpy as np
 from lui import invariants
 
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-
 from sklearn.metrics.pairwise import rbf_kernel, linear_kernel
 from sklearn.base import BaseEstimator, ClassifierMixin
 
