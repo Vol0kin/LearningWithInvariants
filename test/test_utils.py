@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from lusi.ecoc.utils import generate_decoding, generate_encoding
+from lui.ecoc.utils import generate_decoding, generate_encoding
 
 @pytest.fixture
 def labels():

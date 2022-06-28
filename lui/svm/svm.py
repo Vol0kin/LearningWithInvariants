@@ -1,5 +1,5 @@
 import numpy as np
-from lusi import invariants
+from lui import invariants
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
