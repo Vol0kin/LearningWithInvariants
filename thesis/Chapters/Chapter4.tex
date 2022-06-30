@@ -244,8 +244,9 @@ model, we have restricted ourselves to performing the grid search on the followi
 
 \subsection{Results}
 
-Let us now analyze the results that we have obtained from the experimentation. Table \ref{tab:results_accuracies_errors}
-contains the mean accuracies and standard deviations for each dataset considering the different invariant types
+Let us now analyze the results that we have obtained from the experimentation. Tables
+\ref{tab:results_accuracies_errors_100} and \ref{tab:results_accuracies_errors_10}
+contain the mean accuracies and standard deviations for each dataset considering the different invariant types
 and training subsample sizes. We have only reported the mean accuracies achieved when using a subsample
 of 100\% and 10\% of the training partitions, as they represent two extremes of the learning problem: one in which
 there is a lot of available training data, and one where this data is scarce.
@@ -281,81 +282,43 @@ to keep different proportions of it, in practice it seems that preserving this k
 might not be that useful as the models may be prone to overfitting, as we saw in the experimentation with the toy
 problems.
 
+
 \begin{table}[h]
 \centering
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{c|cc|cc|cc|cc|}
-\cline{2-9}
- &
-  \multicolumn{2}{c|}{\textbf{Baseline model}} &
-  \multicolumn{2}{c|}{\textbf{Vapnik invariants}} &
-  \multicolumn{2}{c|}{\textbf{Random projections}} &
-  \multicolumn{2}{c|}{\textbf{Random hyperplanes}} \\ \hline
-\multicolumn{1}{|c|}{\textbf{Dataset}} &
-  \multicolumn{1}{c|}{100\%} &
-  10\% &
-  \multicolumn{1}{c|}{100\%} &
-  10\% &
-  \multicolumn{1}{c|}{100\%} &
-  10\% &
-  \multicolumn{1}{c|}{100\%} &
-  10\% \\ \hline
-\multicolumn{1}{|c|}{Balance Scale} &
-  \multicolumn{1}{c|}{$91.47 \pm 0.38\%$} &
-  $88.80 \pm 1.73\%$ &
-  \multicolumn{1}{c|}{$91.47 \pm 0.38\%$} &
-  $87.73 \pm 2.10\%$ &
-  \multicolumn{1}{c|}{$91.73 \pm 0.38\%$} &
-  $83.73 \pm 7.17\%$ &
-  \multicolumn{1}{c|}{$90.13 \pm 1.51\%$} &
-  $76.00 \pm 12.77\%$ \\ \hline
-\multicolumn{1}{|c|}{Ecoli} &
-  \multicolumn{1}{c|}{$85.29 \pm 2.08\%$} &
-  $71.57 \pm 1.39\%$ &
-  \multicolumn{1}{c|}{$85.29 \pm 1.20\%$} &
-  $72.55 \pm 4.22\%$ &
-  \multicolumn{1}{c|}{$84.15 \pm 2.05\%$} &
-  $67.32 \pm 4.03\%$ &
-  \multicolumn{1}{c|}{$75.98 \pm 6.28\%$} &
-  $63.89 \pm 9.61\%$ \\ \hline
-\multicolumn{1}{|c|}{Glass} &
-  \multicolumn{1}{c|}{$72.87 \pm 7.91\%$} &
-  $56.59 \pm 4.78\%$ &
-  \multicolumn{1}{c|}{$72.87 \pm 7.91\%$} &
-  $45.74 \pm 6.67\%$ &
-  \multicolumn{1}{c|}{$72.09 \pm 7.44\%$} &
-  $52.45 \pm 7.03\%$ &
-  \multicolumn{1}{c|}{$71.06 \pm 7.60\%$} &
-  $45.48 \pm 9.50\%$ \\ \hline
-\multicolumn{1}{|c|}{Iris} &
-  \multicolumn{1}{c|}{$96.67 \pm 0.00\%$} &
-  $93.33 \pm 2.72\%$ &
-  \multicolumn{1}{c|}{$95.56 \pm 1.57\%$} &
-  $90.00 \pm 4.71\%$ &
-  \multicolumn{1}{c|}{$95.19 \pm 1.66\%$} &
-  $77.78 \pm 22.93\%$ &
-  \multicolumn{1}{c|}{$88.52 \pm 11.56\%$} &
-  $84.81 \pm 9.04\%$ \\ \hline
-\multicolumn{1}{|c|}{Yeast} &
-  \multicolumn{1}{c|}{$53.76 \pm 1.04\%$} &
-  $47.92 \pm 2.08\%$ &
-  \multicolumn{1}{c|}{$53.87 \pm 1.20\%$} &
-  $47.92 \pm 2.14\%$ &
-  \multicolumn{1}{c|}{$52.53 \pm 5.44\%$} &
-  $45.68 \pm 4.60\%$ &
-  \multicolumn{1}{c|}{$50.39 \pm 5.33\%$} &
-  $37.82 \pm 7.92\%$ \\ \hline
+\begin{tabular}{lcccc}
+\textbf{Dataset} & \textbf{Baseline model} & \textbf{Vapnik invariants} & \textbf{Random projections} & \textbf{Random hyperplanes} \\ \hline
+Balance Scale & $91.47 \pm 0.38\%$ & $91.47 \pm 0.38\%$ & $91.73 \pm 0.38\%$ & $90.13 \pm 1.51\%$  \\
+Ecoli         & $85.29 \pm 2.08\%$ & $85.29 \pm 1.20\%$ & $84.15 \pm 2.05\%$ & $75.98 \pm 6.28\%$  \\
+Glass         & $72.87 \pm 7.91\%$ & $72.87 \pm 7.91\%$ & $72.09 \pm 7.44\%$ & $71.06 \pm 7.60\%$  \\
+Iris          & $96.67 \pm 0.00\%$ & $95.56 \pm 1.57\%$ & $95.19 \pm 1.66\%$ & $88.52 \pm 11.56\%$ \\
+Yeast         & $53.76 \pm 1.04\%$ & $53.87 \pm 1.20\%$ & $52.53 \pm 5.44\%$ & $50.39 \pm 5.33\%$ 
 \end{tabular}%
 }
-\caption{Mean accuracy and standard deviation for each type of invariant in each problem considering
-the results for subsamples of 100\% and 10\% of the training data. The results are expressed as percentages.}
-\label{tab:results_accuracies_errors}
+\caption{Mean accuracy and standard deviation for each type of invariant in each problem considering the results for subsamples of 100\% of the training data. The results are expressed as percentages.}
+\label{tab:results_accuracies_errors_100}
+\end{table}
+
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\textbf{Dataset} & \textbf{Baseline model} & \textbf{Vapnik invariants} & \textbf{Random projections} & \textbf{Random hyperplanes} \\ \hline
+Balance Scale & $88.80 \pm 1.73\%$ & $87.73 \pm 2.10\%$ & $83.73 \pm 7.17\%$  & $76.00 \pm 12.77\%$ \\
+Ecoli         & $71.57 \pm 1.39\%$ & $72.55 \pm 4.22\%$ & $67.32 \pm 4.03\%$  & $63.89 \pm 9.61\%$  \\
+Glass         & $56.59 \pm 4.78\%$ & $45.74 \pm 6.67\%$ & $52.45 \pm 7.03\%$  & $45.48 \pm 9.50\%$  \\
+Iris          & $93.33 \pm 2.72\%$ & $90.00 \pm 4.71\%$ & $77.78 \pm 22.93\%$ & $84.81 \pm 9.04\%$  \\
+Yeast         & $47.92 \pm 2.08\%$ & $47.92 \pm 2.14\%$ & $45.68 \pm 4.60\%$  & $37.82 \pm 7.92\%$ 
+\end{tabular}%
+}
+\caption{Mean accuracy and standard deviation for each type of invariant in each problem considering the results for subsamples of 10\% of the training data. The results are expressed as percentages.}
+\label{tab:results_accuracies_errors_10}
 \end{table}
 
 We can delve into the previous results by comparing how many times each model obtains a better, worse
 or the same accuracy as the rest of the models for the same experiment. This information has been
-condensed in figure \ref{fig:invariants_performance}, where we can see the performance of the
-different models across all experiments.
+condensed in figures \ref{fig:invariants_performance_1} and \ref{fig:invariants_performance_2}, where we
+can see the performance of the different models across all experiments.
 
 As we can observe, the model with no invariants is capable of achieving more times greater accuracies than
 the rest of the models irregardless of the training size. When compared to the model that uses Vapnik's invariants,
@@ -383,11 +346,22 @@ of invariant by far.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\textwidth]{thesis/Figures/invariants_performance.png}
-    \caption{Waffle charts showing the number of times that each model achieves a better, worse or the same
-    accuracy when compared to the accuracy achieved by another model in the same experiment, aggregated
-    across all datasets. Left column shows the results obtained when the training size is disregarded.
+    \includegraphics[width=\textwidth]{thesis/Figures/invariants_performance_1.png}
+    \caption{Number of times that the baseline model achieves a better, worse or the same
+    accuracy when compared to the rest of the models in the same experiment,
+    aggregated across all datasets. Left column shows the results obtained when the training size is disregarded.
     The right one shows the results only when considering the experiments where 10\% of the training partition
     is used.}
-    \label{fig:invariants_performance}
+    \label{fig:invariants_performance_1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{thesis/Figures/invariants_performance_2.png}
+    \caption{Number of times that the models using Vapnik's invariants, random projections and
+    random hyperplanes achieve a better, worse or the same accuracy when compared one to another
+    in the same experiment, aggregated across all datasets. Left column shows the results obtained when
+    the training size is disregarded. The right one shows the results only when considering the experiments
+    where 10\% of the training partition is used.}
+    \label{fig:invariants_performance_2}
 \end{figure}
