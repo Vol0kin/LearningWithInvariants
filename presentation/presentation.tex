@@ -1,0 +1,386 @@
+\documentclass[10pt, dvipsnames]{beamer}
+\usepackage[utf8]{inputenc}
+
+\usetheme[progressbar=frametitle]{metropolis}
+\usepackage{appendixnumberbeamer}
+\usepackage{annotate-equations}
+\usepackage[english]{babel}
+
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+% \usepackage[dvipsnames]{xcolor}
+
+\usepackage{xspace}
+\newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
+
+\newcommand{\Tau}{\mathcal{T}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\innerprod}[1]{\left< #1 \right>}
+\newcommand{\set}[1]{\lbrace #1 \rbrace}
+
+
+\title{Learning with invariants}
+\subtitle{Master's Thesis}
+% \date{\today}
+\date{}
+\author[Vladislav Nikolov]{\textbf{Author:} Vladislav Nikolov Vasilev \and
+    \textbf{Supervisor:} Dr. Oriol Pujol Vila
+}
+\date{\today}
+\institute{Department of Mathematics and Computer Science \\
+    University of Barcelona
+}
+% \titlegraphic{\hfill\includegraphics[height=1.5cm]{logo.pdf}}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Table of contents}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents%[hideallsubsections]
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{Motivation}
+    \begin{itemize}
+        \item<1-> Classical machine learning methods consider no further information apart
+        from the training samples.
+        \item<2-> But the data may have useful statistical information...
+        \item<3-> Enter the \emph{Learning using statistical invariants} (LUSI) paradigm!
+        \item<4-> Exploit statistical information of the training data in order to find better
+        approximations of the goal function.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Goals of the project}
+    \begin{enumerate}
+        \item<1-> Understand and further explore the application of the invariants to the learning problem.
+        \item<2-> Propose new general use invariants that require no prior knowledge of the problem.
+        \item<3-> Automatize the selection process of the most suitable invariants for a problem.
+        \item<4-> Extend the learning paradigm to multiclass classification problems.
+    \end{enumerate}
+\end{frame}
+
+\section{Learning using statistical invariants}
+
+\begin{frame}{Strong and weak modes of convergence (I)}
+    \only<1-> In a Hilbert space, the relationship between functions $f_1(x)$ and $f_2(x)$ have two
+    numerical properties:
+    
+        \begin{enumerate}
+        \item<2-> The distance between functions
+        
+        \[
+            \rho (f_1, f_2) = \norm{f_1(x) - f_2(x)}
+        \]
+        
+        that is defined by the metric of the $L_2$ space and
+        
+        \item<3-> The inner product between functions
+        
+        \[
+            R(f_1, f_2) = \innerprod{f_1(x), f_2(x)}
+        \]
+        
+        that has to satisfy the corresponding requirements.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Strong and weak modes of convergence (II)}
+    \only<1-> These two properties imply two different modes of convergence:
+    
+    \begin{enumerate}
+        \item<2-> Strong convergence (convergence in metrics):
+        
+        \[
+    \lim_{l \to \infty} \norm{P_l(y=1 | x) - P(y=1 | x)} = 0\quad \forall x
+\]
+        
+        \item<3-> Weak convergence (convergence in inner products):
+        
+        \[
+    \lim_{l \to \infty} \innerprod{P_l(y=1 | x) - P(y=1 | x), \psi(x)} = 0\quad \forall \psi(x) \in L_2
+\]
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{The LUSI paradigm (I)}
+    \begin{itemize}
+        \item<1-> Based on the \alert{weak} mode of convergence.
+        \item<2-> Replaces the infinite set of functions with a set of functions
+        $\mathcal{P} = \set{\psi_1(x), \dots, \psi_m(x)}$ called predicates.
+        \item<3-> The predicates describe important properties of the desired conditional
+        probability function $P(y=1 | x)$.
+        \item<4-> These important properties are called \alert{invariants}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{The LUSI paradigm (II)}
+    Hence, the main goal of this paradigm is to find an approximation of the conditional
+    probability function that preserves the specified invariants. Mathematically, this can
+    be expressed as:
+    
+    \vspace{1.5em}
+
+    \only<1>{
+        \begin{equation*}
+            \frac{1}{l} \sum_{i=1}^l \psi_s(x_i)P_l(y=1 | x_i) \approx a_s \approx \frac{1}{l} \sum_{i=1}^l y_i \psi_s(x_i),\quad
+    s = 1, \dots, m
+        \end{equation*}
+    }
+    
+    \only<2>{
+        \begin{equation*}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} P_l(y=1 | x_i) \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            ,\quad s = 1, \dots, m
+        \end{equation*}
+        \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
+    }
+    
+    \only<3>{
+        \begin{equation*}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[red]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            ,\quad s = 1, \dots, m
+        \end{equation*}
+        \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
+        \annotate[yshift=-1em]{below, left }{prediction}{prediction}
+    }
+    
+    \only<4>{
+        \begin{equation*}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[red]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[Dandelion]{label}{y_i} \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            ,\quad s = 1, \dots, m
+        \end{equation*}
+        \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
+        \annotate[yshift=-1em]{below, left }{prediction}{prediction}
+        \annotate[yshift=-1em]{below, right}{label}{ground truth label}
+    }
+\end{frame}
+
+\begin{frame}{Invariant selection}
+    The authors propose a method to select new invariants. Given a predicate $\psi_{m+1}$, we
+    first evaluate the following expression:
+    
+    \vspace{2em}
+
+    \only<1>{
+        \begin{equation*}
+            \Tau = \frac{\left| \sum_{i=1}^l \psi_{m+1}(x_i) P^m_l(y = 1 | x_i) - \sum_{i=1}^l y_i \psi_{m+1}(x_i) \right|}{\sum_{i=1}^l y_i \psi_{m+1}(x_i)}
+        \end{equation*}
+    }
+    
+    \onslide<2->{
+        \begin{equation*}
+            \Tau = \frac{\left| \sum_{i=1}^l \psi_{m+1}(x_i)
+            \eqnmarkbox[Emerald]{approx}{P^m_l(y = 1 | x_i)} - \sum_{i=1}^l y_i \psi_{m+1}(x_i) \right|}{\sum_{i=1}^l y_i \psi_{m+1}(x_i)}
+        \end{equation*}
+        \annotate[yshift=0.5em]{left}{approx}{approximation of cond. prob. func.\\\sffamily\footnotesize using $m$ invariants}
+    }
+    \vspace{1em}
+    
+    \onslide<3->{If $\Tau \geq \delta$ for some small threshold $\delta$, then the new invariant defined by
+    predicate $\psi_{m+1}$ is selected. Otherwise, it is disregarded.}
+\end{frame}
+
+\begin{frame}{Statistical invariants}
+    \begin{itemize}
+        \item<1-> A \alert{statistical invariant} is a specific realization of a predicate with
+        statistical meaning.
+        \item<2-> It captures some sort of statistical information of the data that has to be conserved
+        when selecting the best candidate function.
+        \item<3-> There are different types of statistical invariants:
+        
+        \begin{itemize}[label=$\star$]
+            \item<4-> Zeroth order invariant (\alert{proportion} of true positives):
+            
+            \[
+                \psi_{z.o.}(x) = 1
+            \]
+            
+            \item<5-> First order invariant (\alert{mean} or \alert{centroid} of true positives):
+            
+            \[
+                \psi_{f.o.}(x) = x
+            \]
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Solving the learning problem (I)}
+    In a Reproducing Kernel Hilbert Space (RKHS), the estimate of the conditional probability
+    function can be computed as
+
+    \vspace{1.5em}
+    
+    \only<1>{
+        \begin{equation*}
+            f(x) = A^T \mathcal{K}(x) + c
+        \end{equation*}
+    }
+    
+    \only<2>{
+        \begin{equation*}
+            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \mathcal{K}(x) + c
+        \end{equation*}
+        \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
+    }
+    
+    \only<3>{
+        \begin{equation*}
+            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \eqnmarkbox[red]{kernel}{\mathcal{K}(x)} + c
+        \end{equation*}
+        \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
+        \annotate[yshift=-1em]{left, below}{kernel}{vector of kernel functions\\\sffamily\footnotesize evaluated on training data}
+    }
+    
+    \only<4>{
+        \begin{equation*}
+            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \eqnmarkbox[red]{kernel}{\mathcal{K}(x)} + \eqnmarkbox[green]{bias}{c}
+        \end{equation*}
+        \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
+        \annotate[yshift=-1em]{left, below}{kernel}{vector of kernel functions\\\sffamily\footnotesize evaluated on training data}
+        \annotate[yshift=1em]{right}{bias}{bias}
+    }
+\end{frame}
+
+\begin{frame}{Solving the learning problem (II)}
+    Let us define the following elements:
+    
+    \begin{itemize}
+        \item<2->  $Y = (y_1, \dots, y_l)$ the vector containing the labels of the training set
+        \item<3-> $K \in \mathbb{R}^{l \times l}$ the matrix with elements $K(x_i, x_j),\; i, j = 1, \dots, l$
+        \item<4-> $\Phi_s = (\psi_s(x_1), \dots, \psi_s(x_l))^T$ the vector obtained from evaluating the $l$ points
+        of the sample using predicate $\psi_s$
+        \item<5-> $1_l = (1, \dots, 1) \in \mathbb{R}^l$ a vector of ones
+        \item<6-> $V \in \mathbb{R}^{l \times l}$ a matrix called
+the $V$-matrix, which captures some geometric properties of the data
+    \end{itemize}
+    
+    \metroset{block=fill}
+    \begin{alertblock}{Note}<7->
+        In the most simple case, the $V-$matrix can be replaced with the identity matrix.
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Solving the learning problem (III)}
+
+    \onslide<1->{
+        We can formulate and solve a minimization problem subject to the invariants equality constraints
+        that has a closed-form solution.
+        
+        The coefficients vector $A$ can be computed as
+        
+        \[
+            A = (A_V - cA_c) - \left( \sum_{s=1}^m \mu_s A_s \right)
+        \]
+    }
+    
+    \onslide<2->{where
+        \begin{equation*}
+            \begin{gathered}
+                A_V = (VK + \gamma I)^{-1} VY \\
+                A_c = (VK + \gamma I)^{-1} V1_l \\
+                A_s = (VK + \gamma I)^{-1} \Phi_s,\quad s = 1, \dots, n 
+            \end{gathered}
+        \end{equation*}
+    }
+\end{frame}
+
+\begin{frame}{Solving the learning problem (IV)}
+    The values of $c$ and the $m$ coefficients $\mu_s$ can be obtained solving the following system of equations:
+
+    \begin{equation*}
+        \begin{gathered}
+            c [1_l^T VKA_c - 1_l^T V 1_l] + \sum_{s=1}^m \mu_s [1_l^T VKA_s - 1_l^T \Phi_s] = [1_l^T VKA_V - 1_l^T V Y] \\
+            c [A_c^TK\Phi_k - 1_l^T\Phi_k] + \sum_{s=1}^m \mu_s A_s^T K \Phi_k = [A_V^T K \Phi_k - Y^T \Phi_k],\quad k=1, \dots, m
+        \end{gathered}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}{Overview of the LUSI algorithm}
+    \begin{description}
+        \item[\textbf{Step 1:}] Construct an estimate of the conditional probability function
+        without considering the predicates.
+        \item[\textbf{Step 2:}] Find the maximal disagreement value $\Tau_s$  for vectors
+        \[
+            \Phi_k = (\psi_k(x_1), \dots, \psi_k(x_l))^T,\quad k=1, \dots, m
+        \]
+        \item[\textbf{Step 3:}] If $\Tau_s > \delta$, add the invariant associated to the predicate $\psi_s$; otherwise stop.
+        \item[\textbf{Step 4:}] Find a new approximation of the conditional probability function and go back to \textbf{Step 2};
+        otherwise stop.
+    \end{description}
+\end{frame}
+
+\begin{frame}{Main results and limitations}
+    \begin{columns}[T, onlytextwidth]
+        \onslide<1->{
+        \column{0.5\textwidth}
+            \textcolor{green}{Contributions}
+            \begin{itemize}
+                \item<2-> Good overall results
+                \item<3-> It can reduce the number of necessary training examples in order to get
+                a good approximation of the conditional probability function
+            \end{itemize}
+        }
+        
+        \onslide<4->{
+        \column{0.5\textwidth}
+            \textcolor{red}{Limitations}
+                \begin{itemize}
+                    \item<5-> Invariants are problem specific
+                    \item<6-> Invariant selection can sometimes be a ``black-art''
+                    \item<7-> Invariants only consider statistical information of the positive class,
+                    hence it cannot be directly applied to multiclass classification problems
+                \end{itemize}
+        }
+    \end{columns}
+\end{frame}
+
+\section{Proposals}
+
+\section{Experimentation and results}
+
+\section{Conclusions}
+
+\begin{frame}{Lists}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.33\textwidth}
+      Items
+      \begin{itemize}
+        \item Milk \item Eggs \item Potatos
+      \end{itemize}
+
+    \column{0.33\textwidth}
+      Enumerations
+      \begin{enumerate}
+        \item First, \item Second and \item Last.
+      \end{enumerate}
+
+    \column{0.33\textwidth}
+      Descriptions
+      \begin{description}
+        \item[PowerPoint] Meeh. \item[Beamer] Yeeeha.
+      \end{description}
+  \end{columns}
+\end{frame}
+\begin{frame}{Animation}
+  \begin{itemize}[<+- | alert@+>]
+    \item \alert<4>{This is\only<4>{ really} important}
+    \item Now this
+    \item And now this
+  \end{itemize}
+\end{frame}
+
+{\setbeamercolor{palette primary}{fg=black, bg=yellow}
+\begin{frame}[standout]
+  Questions?
+\end{frame}
+}
+
+\end{document}
