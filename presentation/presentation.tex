@@ -4,7 +4,12 @@
 \usetheme[progressbar=frametitle]{metropolis}
 \usepackage{appendixnumberbeamer}
 \usepackage{annotate-equations}
+\usepackage{float}
 \usepackage[english]{babel}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsfonts}
+\usepackage{bbding}
 
 \usepackage{booktabs}
 \usepackage[scale=2]{ccicons}
@@ -21,6 +26,7 @@
 \newcommand{\norm}[1]{\lVert #1 \rVert}
 \newcommand{\innerprod}[1]{\left< #1 \right>}
 \newcommand{\set}[1]{\lbrace #1 \rbrace}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
 
 
 \title{Learning with invariants}
@@ -52,8 +58,8 @@
         \item<1-> Classical machine learning methods consider no further information apart
         from the training samples.
         \item<2-> But the data may have useful statistical information...
-        \item<3-> Enter the \emph{Learning using statistical invariants} (LUSI) paradigm!
-        \item<4-> Exploit statistical information of the training data in order to find better
+        \item<3-> Enter the Learning Using Statistical Invariants (LUSI) paradigm!
+        \item<4-> \alert{Goal:} Exploit statistical information of the training data in order to find better
         approximations of the goal function.
     \end{itemize}
 \end{frame}
@@ -62,7 +68,7 @@
     \begin{enumerate}
         \item<1-> Understand and further explore the application of the invariants to the learning problem.
         \item<2-> Propose new general use invariants that require no prior knowledge of the problem.
-        \item<3-> Automatize the selection process of the most suitable invariants for a problem.
+        \item<3-> Automatize the selection process of the most suitable invariants for a given problem.
         \item<4-> Extend the learning paradigm to multiclass classification problems.
     \end{enumerate}
 \end{frame}
@@ -80,7 +86,7 @@
             \rho (f_1, f_2) = \norm{f_1(x) - f_2(x)}
         \]
         
-        that is defined by the metric of the $L_2$ space and
+        which is defined by the metric of the $L_2$ space and
         
         \item<3-> The inner product between functions
         
@@ -88,7 +94,7 @@
             R(f_1, f_2) = \innerprod{f_1(x), f_2(x)}
         \]
         
-        that has to satisfy the corresponding requirements.
+        which has to satisfy the corresponding requirements.
     \end{enumerate}
 \end{frame}
 
@@ -122,7 +128,7 @@
 \end{frame}
 
 \begin{frame}{The LUSI paradigm (II)}
-    Hence, the main goal of this paradigm is to find an approximation of the conditional
+    The main goal of this paradigm is to find an approximation of the conditional
     probability function that preserves the specified invariants. Mathematically, this can
     be expressed as:
     
@@ -130,14 +136,14 @@
 
     \only<1>{
         \begin{equation*}
-            \frac{1}{l} \sum_{i=1}^l \psi_s(x_i)P_l(y=1 | x_i) \approx a_s \approx \frac{1}{l} \sum_{i=1}^l y_i \psi_s(x_i),\quad
+            \frac{1}{l} \sum_{i=1}^l \psi_s(x_i)P_l(y=1 | x_i) \approx \frac{1}{l} \sum_{i=1}^l y_i \psi_s(x_i),\quad
     s = 1, \dots, m
         \end{equation*}
     }
     
     \only<2>{
         \begin{equation*}
-            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} P_l(y=1 | x_i) \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[NavyBlue]{pred1}{ \psi_s(x_i)} P_l(y=1 | x_i) \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[NavyBlue]{pred2}{ \psi_s(x_i)}
             ,\quad s = 1, \dots, m
         \end{equation*}
         \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
@@ -145,7 +151,7 @@
     
     \only<3>{
         \begin{equation*}
-            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[red]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[NavyBlue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[WildStrawberry]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l y_i \eqnmarkbox[NavyBlue]{pred2}{ \psi_s(x_i)}
             ,\quad s = 1, \dots, m
         \end{equation*}
         \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
@@ -154,7 +160,7 @@
     
     \only<4>{
         \begin{equation*}
-            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[blue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[red]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[Dandelion]{label}{y_i} \eqnmarkbox[blue]{pred2}{ \psi_s(x_i)}
+            \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[NavyBlue]{pred1}{ \psi_s(x_i)} \eqnmarkbox[WildStrawberry]{prediction}{P_l(y=1 | x_i)} \approx \frac{1}{l} \sum_{i=1}^l \eqnmarkbox[Dandelion]{label}{y_i} \eqnmarkbox[NavyBlue]{pred2}{ \psi_s(x_i)}
             ,\quad s = 1, \dots, m
         \end{equation*}
         \annotatetwo[yshift=1em]{left}{pred1}{pred2}{predicates}
@@ -226,14 +232,14 @@
     
     \only<2>{
         \begin{equation*}
-            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \mathcal{K}(x) + c
+            f(x) = \eqnmarkbox[NavyBlue]{coeff}{A^T} \mathcal{K}(x) + c
         \end{equation*}
         \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
     }
     
     \only<3>{
         \begin{equation*}
-            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \eqnmarkbox[red]{kernel}{\mathcal{K}(x)} + c
+            f(x) = \eqnmarkbox[NavyBlue]{coeff}{A^T} \eqnmarkbox[WildStrawberry]{kernel}{\mathcal{K}(x)} + c
         \end{equation*}
         \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
         \annotate[yshift=-1em]{left, below}{kernel}{vector of kernel functions\\\sffamily\footnotesize evaluated on training data}
@@ -241,7 +247,7 @@
     
     \only<4>{
         \begin{equation*}
-            f(x) = \eqnmarkbox[blue]{coeff}{A^T} \eqnmarkbox[red]{kernel}{\mathcal{K}(x)} + \eqnmarkbox[green]{bias}{c}
+            f(x) = \eqnmarkbox[NavyBlue]{coeff}{A^T} \eqnmarkbox[WildStrawberry]{kernel}{\mathcal{K}(x)} + \eqnmarkbox[green]{bias}{c}
         \end{equation*}
         \annotate[yshift=1em]{left}{coeff}{vector of coefficients}
         \annotate[yshift=-1em]{left, below}{kernel}{vector of kernel functions\\\sffamily\footnotesize evaluated on training data}
@@ -253,13 +259,13 @@
     Let us define the following elements:
     
     \begin{itemize}
-        \item<2->  $Y = (y_1, \dots, y_l)$ the vector containing the labels of the training set
-        \item<3-> $K \in \mathbb{R}^{l \times l}$ the matrix with elements $K(x_i, x_j),\; i, j = 1, \dots, l$
+        \item<2->  $Y = (y_1, \dots, y_l)$ the vector containing the labels of the training set.
+        \item<3-> $K \in \mathbb{R}^{l \times l}$ the matrix with elements $K(x_i, x_j),\; i, j = 1, \dots, l$.
         \item<4-> $\Phi_s = (\psi_s(x_1), \dots, \psi_s(x_l))^T$ the vector obtained from evaluating the $l$ points
-        of the sample using predicate $\psi_s$
-        \item<5-> $1_l = (1, \dots, 1) \in \mathbb{R}^l$ a vector of ones
+        of the sample using predicate $\psi_s$.
+        \item<5-> $1_l = (1, \dots, 1) \in \mathbb{R}^l$ a vector of ones.
         \item<6-> $V \in \mathbb{R}^{l \times l}$ a matrix called
-the $V$-matrix, which captures some geometric properties of the data
+the $V$-matrix, which captures some geometric properties of the data.
     \end{itemize}
     
     \metroset{block=fill}
@@ -321,11 +327,11 @@ the $V$-matrix, which captures some geometric properties of the data
     \begin{columns}[T, onlytextwidth]
         \onslide<1->{
         \column{0.5\textwidth}
-            \textcolor{green}{Contributions}
+            \textcolor{Green}{Contributions}
             \begin{itemize}
-                \item<2-> Good overall results
+                \item<2-> Good overall results.
                 \item<3-> It can reduce the number of necessary training examples in order to get
-                a good approximation of the conditional probability function
+                a good approximation of the conditional probability function.
             \end{itemize}
         }
         
@@ -333,10 +339,10 @@ the $V$-matrix, which captures some geometric properties of the data
         \column{0.5\textwidth}
             \textcolor{red}{Limitations}
                 \begin{itemize}
-                    \item<5-> Invariants are problem specific
-                    \item<6-> Invariant selection can sometimes be a ``black-art''
+                    \item<5-> Invariants are problem specific.
+                    \item<6-> Invariant selection can sometimes be a ``black-art''.
                     \item<7-> Invariants only consider statistical information of the positive class,
-                    hence it cannot be directly applied to multiclass classification problems
+                    hence it cannot be directly applied to multiclass classification problems.
                 \end{itemize}
         }
     \end{columns}
@@ -344,43 +350,367 @@ the $V$-matrix, which captures some geometric properties of the data
 
 \section{Proposals}
 
+\begin{frame}{Overview}
+    In order to deal with some of the limitations of the original work, we propose
+    
+    \begin{itemize}
+        \item<2-> Two new general use invariants based on random processes: \alert{random projections} and
+        \alert{random hyperplanes}.
+        \item<3-> An extension of the original algorithm to consider the negative class and
+        all classes in multiclass classification problems using Error Correcting Output Codes (ECOC).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Random projections (I)}
+    \begin{itemize}
+        \item<1-> Based on the \alert{first order invariant}.
+        \item<2-> Projects the data into a new dimensional space, as if it was viewed from a particular
+        point in the original space.
+        \item<3-> Preserve the centroid of the positive class in this new space.
+        \item<4-> Mathematically, this can be expressed as:
+    \end{itemize}
+
+    \only<4>{
+        \begin{equation*}
+            \psi_{r.p.}(x) = x p
+        \end{equation*}
+    }
+    
+    \only<5>{
+        \begin{equation*}
+            \psi_{r.p.}(x) = x \eqnmarkbox[WildStrawberry]{projvec}{p}
+        \end{equation*}
+        \annotate[yshift=1em]{right}{projvec}{$p \sim \mathcal{N}(\mu, \Sigma)$, projection vector}
+    }
+\end{frame}
+
+\begin{frame}{Random projections (II)}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/random_projections_example.png}
+        \caption{Examples of the random projection invariant.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Random hyperplanes (I)}
+    \begin{itemize}
+        \item<1-> Based on the \alert{zeroth order invariant}.
+        \item<2-> Split the data using a hyperplane passing through one of the
+        points of the sample.
+        \item<3-> The elements that fall on the right side of the hyperplane will be considered
+        as the positive samples, whereas the ones on the left as the negative ones.
+        \item<4-> Preserve the proportion of elements of the positive class that fall on the
+        right side of the hyperplane.
+        \item<5-> Mathematically, this can be expressed as:
+    \end{itemize}
+    
+    \only<5>{
+        \begin{equation*}
+            \psi_{r.h.}(x) =
+            \begin{cases}
+                1 & \text{if $(x - x_c)n \geq 0$ }\\
+                0 & \text{otherwise}
+            \end{cases}
+        \end{equation*}
+    }
+    
+    \only<6>{
+        \begin{equation*}
+            \psi_{r.h.}(x) =
+            \begin{cases}
+                1 & \text{if $(x - \eqnmarkbox[NavyBlue]{center}{x_c})n \geq 0$ }\\
+                0 & \text{otherwise}
+            \end{cases}
+        \end{equation*}
+        \annotate[yshift=1em]{left}{center}{$x_c \in X$}
+    }
+    
+    \onslide<7->{
+        \begin{equation*}
+            \psi_{r.h.}(x) =
+            \begin{cases}
+                1 & \text{if $(x - \eqnmarkbox[NavyBlue]{center}{x_c})\eqnmarkbox[WildStrawberry]{normal}{n} \geq 0$ }\\
+                0 & \text{otherwise}
+            \end{cases}
+        \end{equation*}
+        \annotate[yshift=1em]{left}{center}{$x_c \in X$}
+        \annotate[yshift=1em]{right}{normal}{$n \sim \mathcal{N}(\mu, \Sigma)$, normal vector}
+    }
+\end{frame}
+
+\begin{frame}{Random hyperplanes (II)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/random_hyperplanes_example.png}
+        \caption{Examples of the random hyperplane invariant.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Considerations}
+    The original LUSI algorithm has to be modified to take into account the stochastic nature
+    of these new invariants. Specifically, the following changes have to be introduced:
+    
+    \begin{enumerate}
+        \item<2-> Generate new invariants at each iteration.
+        \item<3-> Allow the algorithm to try new invariants when no invariant is selected.
+        \item<4-> Limit the number of tries so that the algorithm does not end up in an infinite loop.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Extending LUSI with ECOC (I)}
+    \begin{itemize}
+        \item<1-> In order to deal with both the negative class and multiclass classification
+        problems, we can extend LUSI using the Error Correcting Output Codes (ECOC) framework.
+        \item<2-> The ECOC framework is used to transform multiclass classification problems
+        into binary ones.
+        \item<3-> For each one of the $N_c$ classes we create a codeword of length $n$. These
+        codewords are organized as the rows of a matrix $M \in \set{0, 1}^{N_c \times n}$ called
+        the \alert{coding matrix}.
+        \item<4-> Each column of the matrix is treated as an individual classification problem
+        and a binary classifier is fit with the transformed data.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Extending LUSI with ECOC (II)}
+    \begin{table}[!htb]
+        \begin{minipage}{.5\textwidth}
+            \centering
+            \begin{tabular}{c|ccccc}
+                            & $h_1$ & $h_2$ & $h_3$ & $h_4$ & $h_5$ \\ \hline
+                \textbf{C1} & 1     & 0     & 0     & 0     & 0     \\
+                \textbf{C2} & 0     & 1     & 0     & 0     & 0     \\
+                \textbf{C3} & 0     & 0     & 1     & 0     & 0     \\
+                \textbf{C4} & 0     & 0     & 0     & 1     & 0     \\
+                \textbf{C5} & 0     & 0     & 0     & 0     & 1    
+            \end{tabular}
+        \end{minipage}%
+        \begin{minipage}{.5\textwidth}
+            \centering
+            \begin{tabular}{c|ccccc}
+                            & $h_1$ & $h_2$ & $h_3$ & $h_4$ & $h_5$ \\ \hline
+                \textbf{C1} & 1     & 1     & 1     & 0     & 0     \\
+                \textbf{C2} & 0     & 1     & 1     & 0     & 1     \\
+                \textbf{C3} & 1     & 0     & 0     & 1     & 0     \\
+                \textbf{C4} & 0     & 1     & 0     & 1     & 0     \\
+                \textbf{C5} & 0     & 0     & 1     & 0     & 1    
+            \end{tabular}
+        \end{minipage}
+        \caption{Two examples of coding matrices. The left one represents a special coding called
+        one-against-all.}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Extending LUSI with ECOC (III)}
+    \onslide<1-> Let  $f(x) = (f_1(x), \dots, f_n(x))$ be the vector containing the predictions
+    for each one of the problems. In order to obtain the final output class, we have to decode
+    this vector, which can be done using the following expression:
+    
+    \vspace{1.5em}
+    
+    \only<1>{
+        \begin{equation*}
+            \hat{y} = \argmin_r d(M_r, f(x))
+        \end{equation*}
+    }
+    
+    \only<2>{
+        \begin{equation*}
+            \hat{y} = \argmin_r \eqnmarkbox[NavyBlue]{distance}{d}(M_r, f(x))
+        \end{equation*}
+        \annotate[yshift=1em]{left}{distance}{distance metric (Hamming, Euclidean, etc.)}
+    }
+    \onslide<3->{
+        \begin{equation*}
+            \hat{y} = \argmin_r \eqnmarkbox[NavyBlue]{distance}{d}(\eqnmarkbox[Dandelion]{row}{M_r}, f(x))
+        \end{equation*}
+        \annotate[yshift=1em]{left}{distance}{distance metric (Hamming, Euclidean, etc.)}
+        \annotate[yshift=-1em]{right, below}{row}{$r-$th row of $M$}
+    }
+    
+    \vspace{1.5em}
+    
+    \onslide<4-> We can use a vector of predicted probabilities and the Euclidean distance.
+\end{frame}
+
 \section{Experimentation and results}
+
+\begin{frame}{Overview}
+    \onslide<1-> Experimentation with two types of datasets with different goals in mind:
+    \begin{itemize}
+        \item<2-> Toy datasets
+        \begin{itemize}
+            \item<3-> Compare the different invariants.
+            \item<4-> Compare the original algorithm with the ECOC version.
+            \item<5-> Find interesting properties of the invariants.
+        \end{itemize}
+        \item<6-> Real datasets
+            \begin{itemize}
+                \item<7-> Assess the quality of the proposed invariants.
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Experimentation with toy datasets}
+    Compare Vapnik's invariants (zeroth and first order) with random projections and random
+    hyperplanes on the Circles and Moons datasets.
+    
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/figures/toy_datasets.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Comparing LUSI with the ECOC version (I)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=.5\textwidth]{presentation/figures/comparative_circles.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Comparing LUSI with the ECOC version (II)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=.5\textwidth]{presentation/figures/comparative_moons.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Comparing the number of selected invariants}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/num_selected_invariants.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Exploring the bias towards certain types of invariants}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{thesis/Figures/mean_num_selected.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Experimentation with real datasets}
+    \begin{itemize}
+        \item<1-> Assess the quality of the invariants on 5 multiclass classification problems.
+        \item<2-> Compare 4 models using different types of invariants: no invariants,
+        Vapnik's invariants, random projections and random hyperplanes.
+        \item<3-> Evaluate the models using different problem sizes: 100\%, 50\% and 10\% of the
+        training data.
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Selected datasets}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\textbf{Problem} & \textbf{Num. examples} & \textbf{Attributes} & \textbf{Classes} \\ \hline
+Balance Scale    & 625                    & 4                   & 3                \\
+Ecoli            & 336                    & 8                   & 8                \\
+Glass            & 214                    & 9                   & \textcolor{red}{6} \\
+Iris             & 150                    & 4                   & 3                \\
+Yeast            & 1484                   & 8                   & 10              
+\end{tabular}
+\end{table}
+    
+\end{frame}
+
+% \begin{frame}{Experimentation methodology}
+%     \begin{figure}
+%         \centering
+%         \includegraphics[width=0.7\textwidth]{thesis/Figures/experimentation_scheme.drawio.png}
+%         \caption{Caption}
+%     \end{figure}
+% \end{frame}
+
+\begin{frame}{Results}
+\begin{table}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\textbf{Dataset} & \textbf{Baseline model} & \textbf{Vapnik invariants} & \textbf{Random projections} & \textbf{Random hyperplanes} \\ \hline
+Balance Scale & $91.47 \pm 0.38\%$ & $91.47 \pm 0.38\%$ & $\mathbf{91.73 \pm 0.38\%}$ & $90.13 \pm 1.51\%$  \\
+Ecoli         & $85.29 \pm 2.08\%$ & $\mathbf{85.29 \pm 1.20\%}$ & $84.15 \pm 2.05\%$ & $75.98 \pm 6.28\%$  \\
+Glass         & $\mathbf{72.87 \pm 7.91\%}$ & $\mathbf{72.87 \pm 7.91\%}$ & $72.09 \pm 7.44\%$ & $71.06 \pm 7.60\%$  \\
+Iris          & $\mathbf{96.67 \pm 0.00\%}$ & $95.56 \pm 1.57\%$ & $95.19 \pm 1.66\%$ & $88.52 \pm 11.56\%$ \\
+Yeast         & $53.76 \pm 1.04\%$ & $\mathbf{53.87 \pm 1.20\%}$ & $52.53 \pm 5.44\%$ & $50.39 \pm 5.33\%$ 
+\end{tabular}%
+}
+\caption{Results using 100\% of the training data.}
+\end{table}
+
+\begin{table}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\textbf{Dataset} & \textbf{Baseline model} & \textbf{Vapnik invariants} & \textbf{Random projections} & \textbf{Random hyperplanes} \\ \hline
+Balance Scale & $\mathbf{88.80 \pm 1.73\%}$ & $87.73 \pm 2.10\%$ & $83.73 \pm 7.17\%$  & $76.00 \pm 12.77\%$ \\
+Ecoli         & $71.57 \pm 1.39\%$ & $\mathbf{72.55 \pm 4.22\%}$ & $67.32 \pm 4.03\%$  & $63.89 \pm 9.61\%$  \\
+Glass         & $\mathbf{56.59 \pm 4.78\%}$ & $45.74 \pm 6.67\%$ & $52.45 \pm 7.03\%$  & $45.48 \pm 9.50\%$  \\
+Iris          & $\mathbf{93.33 \pm 2.72\%}$ & $90.00 \pm 4.71\%$ & $77.78 \pm 22.93\%$ & $84.81 \pm 9.04\%$  \\
+Yeast         & $\mathbf{47.92 \pm 2.08\%}$ & $47.92 \pm 2.14\%$ & $45.68 \pm 4.60\%$  & $37.82 \pm 7.92\%$ 
+\end{tabular}%
+}
+\caption{Results using a subsample of 10\% of the training data.}
+\end{table}
+\end{frame}
+
+\begin{frame}{Comparing the invariants on individual problems (I)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/figures/invariants_performance_1.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Comparing the invariants on individual problems (II)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/figures/invariants_performance_2.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Comparing the invariants on individual problems (III)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{presentation/figures/invariants_performance_3.png}
+    \end{figure}
+\end{frame}
 
 \section{Conclusions}
 
-\begin{frame}{Lists}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.33\textwidth}
-      Items
-      \begin{itemize}
-        \item Milk \item Eggs \item Potatos
-      \end{itemize}
-
-    \column{0.33\textwidth}
-      Enumerations
-      \begin{enumerate}
-        \item First, \item Second and \item Last.
-      \end{enumerate}
-
-    \column{0.33\textwidth}
-      Descriptions
-      \begin{description}
-        \item[PowerPoint] Meeh. \item[Beamer] Yeeeha.
-      \end{description}
-  \end{columns}
-\end{frame}
-\begin{frame}{Animation}
-  \begin{itemize}[<+- | alert@+>]
-    \item \alert<4>{This is\only<4>{ really} important}
-    \item Now this
-    \item And now this
-  \end{itemize}
+\begin{frame}{Conclusions}
+    \begin{itemize}
+        \item[\textcolor{Dandelion}{\checkmark}]<+-> Propose new general use invariants that require no prior
+        knowledge of the problem.
+        \begin{itemize}
+            \item<+-> Random projections are slightly worse than Vapnik's invariants.
+            \item<+-> Random hyperplanes are outperformed by all the other types of invariants.
+        \end{itemize}
+        \item[\textcolor{Red}{\XSolidBrush}]<+-> Automatized the selection process of the most suitable
+        invariants for a given problem.
+        \item[\textcolor{Green}{\checkmark}]<+-> Extend the learning paradigm to multiclass classification problems.
+        \begin{itemize}
+            \item<+-> Created a small software module containing the different invariants and both the original
+            and ECOC version of LUSI.
+        \end{itemize}
+    \end{itemize}
 \end{frame}
 
-{\setbeamercolor{palette primary}{fg=black, bg=yellow}
+\begin{frame}{Future work}
+    \begin{itemize}
+        \item<1-> Reformulate the optimization problem so that it can be solved by using an iterative
+        algorithm.
+        \item<2-> Explore higher order invariants.
+        \item<3-> Explore invariants for other application domains (images, text, etc.).
+        \item<4-> Improve random projections by constructing an orthogonal space from random vectors.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}[standout]
-  Questions?
+    Thank you for your attention!
+    \rule[-1ex]{\textwidth}{1.5pt}\\[3.5ex]
+    Questions?
 \end{frame}
-}
+
 
 \end{document}
