@@ -76,7 +76,7 @@
 \section{Learning using statistical invariants}
 
 \begin{frame}{Strong and weak modes of convergence (I)}
-    \only<1-> In a Hilbert space, the relationship between functions $f_1(x)$ and $f_2(x)$ have two
+    \only<1-> In a Hilbert space, the relationships between functions $f_1(x)$ and $f_2(x)$ have two
     numerical properties:
     
         \begin{enumerate}
@@ -203,13 +203,13 @@
         \item<3-> There are different types of statistical invariants:
         
         \begin{itemize}[label=$\star$]
-            \item<4-> Zeroth order invariant (\alert{proportion} of true positives):
+            \item<4-> Zeroth order invariant (\alert{proportion} of positive class elements):
             
             \[
                 \psi_{z.o.}(x) = 1
             \]
             
-            \item<5-> First order invariant (\alert{mean} or \alert{centroid} of true positives):
+            \item<5-> First order invariant (\alert{mean} or \alert{centroid} of positive class elements):
             
             \[
                 \psi_{f.o.}(x) = x
@@ -529,7 +529,7 @@ the $V$-matrix, which captures some geometric properties of the data.
     
     \vspace{1.5em}
     
-    \onslide<4-> We can use a vector of predicted probabilities and the Euclidean distance.
+    \onslide<4-> In our proposal we use a vector of predicted probabilities and the Euclidean distance.
 \end{frame}
 
 \section{Experimentation and results}
@@ -593,8 +593,8 @@ the $V$-matrix, which captures some geometric properties of the data.
         \item<1-> Assess the quality of the invariants on 5 multiclass classification problems.
         \item<2-> Compare 4 models using different types of invariants: no invariants,
         Vapnik's invariants, random projections and random hyperplanes.
-        \item<3-> Evaluate the models using different problem sizes: 100\%, 50\% and 10\% of the
-        training data.
+        \item<3-> Evaluate the models using different subsamples of the training data:
+        100\%, 50\% and 10\% of the training partition.
     \end{itemize}
 \end{frame}
 
